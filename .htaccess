@@ -1,0 +1,40 @@
+# Kolam Renang Al Ma'soem - Production htaccess
+Options -Indexes
+ServerSignature Off
+
+# Proteksi file sensitif
+<FilesMatch "^\.env|\.sql$|\.md$|\.log$">
+    Require all denied
+</FilesMatch>
+<Files "config.php">
+    Require all denied
+</Files>
+
+# Blok akses langsung ke folder sensitif (buka via PHP require saja)
+RewriteEngine On
+RewriteRule ^(database|core|models|controllers)/ - [F,L]
+
+# Blok akses file installer di production (hapus atau rename setelah install)
+<FilesMatch "^(setup-db|seed)\.php$">
+    Require all denied
+</FilesMatch>
+
+# Optional: force HTTPS (aktifkan jika VM sudah ada SSL)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Cache static
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
