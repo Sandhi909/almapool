@@ -13,14 +13,16 @@
 </div>
 
 <div class="row g-3 mb-3">
-  <div class="col-6 col-xl-3"><div class="tt-card"><span class="metric-label">Transaksi (<?= e($filter['date'] ?: 'semua') ?>)</span>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transaksi (<?= e($filter['date'] ?: 'semua') ?>)</span>
     <div class="metric-value num"><?= $sumHari['count'] ?></div></div></div>
-  <div class="col-6 col-xl-3"><div class="tt-card"><span class="metric-label">Total</span>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Total</span>
     <div class="metric-value num" style="color:var(--tt-primary)"><?= rupiah($sumHari['total']) ?></div></div></div>
-  <div class="col-6 col-xl-3"><div class="tt-card"><span class="metric-label">Tunai</span>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Tunai</span>
     <div class="metric-value num"><?= rupiah($sumHari['by']['TUNAI']) ?></div></div></div>
-  <div class="col-6 col-xl-3"><div class="tt-card"><span class="metric-label">QRIS + Transfer</span>
-    <div class="metric-value num"><?= rupiah($sumHari['by']['QRIS'] + $sumHari['by']['TRANSFER']) ?></div></div></div>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">QRIS</span>
+    <div class="metric-value num"><?= rupiah($sumHari['by']['QRIS']) ?></div></div></div>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transfer</span>
+    <div class="metric-value num"><?= rupiah($sumHari['by']['TRANSFER']) ?></div></div></div>
 </div>
 
 <div class="tt-card mb-3">
