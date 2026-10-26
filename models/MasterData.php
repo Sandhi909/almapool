@@ -11,3 +11,7 @@ class MasterRombongan extends Model {
     protected string $table = 'master_rombongan';
     public function active(): array { return $this->query('SELECT * FROM master_rombongan WHERE is_active=1 ORDER BY name'); }
 }
+class MasterExpenseType extends Model {
+    protected string $table = 'expense_types';
+    public function active(): array { return $this->query('SELECT * FROM expense_types WHERE is_active=1 ORDER BY name'); }
+}

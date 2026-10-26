@@ -25,6 +25,7 @@ $delForm = function (string $tabel, int $id): string {
   <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-usia" type="button"><i class="bi bi-people me-1"></i>Kelompok Usia</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-rombongan" type="button"><i class="bi bi-flag me-1"></i>Rombongan</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-obat" type="button"><i class="bi bi-capsule me-1"></i>Kategori & Satuan Obat</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-biaya" type="button"><i class="bi bi-cash-coin me-1"></i>Jenis Biaya</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-user" type="button"><i class="bi bi-people me-1"></i>User & Role</button></li>
   <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-pengaturan" type="button"><i class="bi bi-sliders me-1"></i>Pengaturan</button></li>
 </ul>
@@ -217,6 +218,27 @@ $delForm = function (string $tabel, int $id): string {
     </div>
   </div>
 
+  <div class="tab-pane fade" id="tab-biaya">
+    <div class="tt-card">
+      <div class="d-flex align-items-center gap-2 mb-2"><b>Jenis Biaya Operasional</b>
+        <button class="btn btn-tt btn-sm ms-auto" type="button" data-bs-toggle="modal" data-bs-target="#biayaTypeModal"><i class="bi bi-plus-lg me-1"></i>Tambah Jenis Biaya</button></div>
+      <div class="table-responsive"><table class="table tt-table align-middle mb-0">
+        <thead><tr><th>Nama Jenis Biaya</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody>
+          <?php foreach ($JENIS_BIAYA as $jb): ?>
+          <tr><td><b><?= e($jb['name']) ?></b></td>
+            <td><?= (int) $jb['is_active'] ? '<span class="pill pill-green"><span class="dot"></span>Aktif</span>' : '<span class="pill pill-grey">Nonaktif</span>' ?></td>
+            <td class="text-nowrap">
+              <button class="btn btn-light btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#biayaTypeModal"
+                data-row='<?= e(json_encode($jb, JSON_HEX_APOS | JSON_HEX_QUOT)) ?>'>Edit</button>
+              <?= $delForm('jenis_biaya', (int) $jb['id']) ?>
+            </td></tr>
+          <?php endforeach; ?>
+        </tbody></table></div>
+      <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Jenis biaya digunakan saat input biaya operasional di halaman transaksi.</small>
+    </div>
+  </div>
+
   <div class="tab-pane fade" id="tab-user">
     <div class="tt-card">
       <div class="d-flex align-items-center gap-2 mb-2"><b>User &amp; Role</b>
@@ -334,6 +356,10 @@ $modal('kategoriModal', 'Tambah Kategori Obat',
 $modal('satuanModal', 'Tambah Satuan Obat',
     'tambah_satuan',
     '<div class="col-12"><label class="form-label fw-semibold">Nama Satuan</label><input class="form-control" name="nama" required placeholder="Contoh: botol, liter, kg..."></div>');
+$modal('biayaTypeModal', 'Jenis Biaya Operasional',
+    'jenis_biaya',
+    '<div class="col-12"><label class="form-label fw-semibold">Nama Jenis Biaya</label><input class="form-control f-nama" name="nama" required placeholder="Contoh: Backwash, Listrik, Gaji..."></div>'
+    . '<div class="col-6"><label class="form-label fw-semibold">Status</label><select class="form-select f-aktif" name="is_active"><option value="1">Aktif</option><option value="0">Nonaktif</option></select></div>');
 ?>
 
 <?php ob_start(); ?>

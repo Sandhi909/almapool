@@ -115,12 +115,15 @@ class TransaksiController
         $setoranAuto = ['QRIS' => (float) ($sum['by']['QRIS'] ?? 0),
             'TRANSFER' => (float) ($sum['by']['TRANSFER'] ?? 0),
             'UANG' => (float) ($sum['by']['TUNAI'] ?? 0)];
+        $totBiayaArr = (new OpCost())->total($y, $mo);
+        $totBiaya = array_sum($totBiayaArr);
         return [
             'TRANSAKSI' => (new Transaction())->listAll($filter),
             'filter' => $filter,
             'sumHari' => $sum,
             'BIAYA' => (new OpCost())->monthly($y, $mo),
-            'totBiaya' => (new OpCost())->total($y, $mo),
+            'totBiaya' => $totBiaya,
+            'EXPENSE_TYPES' => (new MasterExpenseType())->active(),
             'SETORAN' => $setoranAuto,
             'LAPORAN' => ['periode' => date('F Y')],
         ];
@@ -132,20 +135,36 @@ class TransaksiController
         if ($act === 'biaya') {
             require_role(['admin', 'kasir']);
             (new OpCost())->create([
-                'cost_date' => post('tanggal') ?: date('Y-m-d'), 'name' => (string) post('nama', ''),
+                'cost_date' => post('tanggal') ?: date('Y-m-d'), 'expense_type_id' => (int) post('expense_type_id', 0),
                 'amount' => to_money(post('jumlah', 0)), 'notes' => post('keterangan') ?: null,
-                'created_by' => (int) auth_user()['id'],
+                'created_by' => auth_user() ? (int) auth_user()['id'] : null,
             ]);
             flash('success', 'Biaya operasional dicatat.');
+            redirect('?page=transaksi');
         } elseif ($act === 'setoran') {
             // NONAKTIF: setoran kini otomatis dari transaksi (lihat Report::$trxPay).
             flash('info', 'Input setoran manual dinonaktifkan. Nominal setoran otomatis dari transaksi kasir.');
+            redirect('?page=transaksi');
         } elseif ($act === 'hapus-biaya') {
             require_role(['admin']);
             (new OpCost())->delete((int) post('id', 0));
             flash('success', 'Biaya dihapus.');
+            redirect('?page=transaksi');
+        } elseif ($act === 'edit-biaya') {
+            require_role(['admin', 'kasir']);
+            $id = (int) post('id', 0);
+            if ($id) {
+                $d = [
+                    'cost_date' => post('tanggal') ?: date('Y-m-d'), 'expense_type_id' => (int) post('expense_type_id', 0),
+                    'amount' => to_money(post('jumlah', 0)), 'notes' => post('keterangan') ?: null,
+                ];
+                (new OpCost())->update($id, $d);
+                flash('success', 'Biaya operasional diperbarui.');
+                redirect('?page=transaksi');
+            }
         } elseif ($act === 'hapus-setoran') {
             flash('info', 'Input setoran manual dinonaktifkan. Nominal setoran otomatis dari transaksi kasir.');
+            redirect('?page=transaksi');
         } elseif ($act === 'edit-transaksi') {
             require_role(['admin','kasir']);
             $id = (int) post('id', 0);
@@ -231,12 +250,13 @@ class LaporanController
             $periode = 'Harian ' . hari_tanggal_indo($date);
             $period = ['type' => 'harian', 'date' => $date];
         } elseif ($type === 'mingguan') {
-            $week = max(1, (int) get_param('minggu', 1));
+            $month = max(1, min(12, (int) get_param('bulan', date('n'))));
+            $week = max(1, min(4, (int) get_param('minggu', current_week_of_month())));
             $year = max(2020, min(2100, (int) get_param('tahun', date('Y'))));
-            [$start, $end] = weekBounds($year, $week);
+            [$start, $end] = weekOfMonthBounds($year, $month, $week);
             $repData = $rep->weekly($start, $end);
-            $periode = 'Mingguan minggu ' . $week . ' / ' . $year . ' (' . tanggal_indo($start) . ' - ' . tanggal_indo($end) . ')';
-            $period = ['type' => 'mingguan', 'year' => $year, 'week' => $week, 'start' => $start, 'end' => $end];
+            $periode = 'Mingguan ke-' . $week . ' ' . bulan_indo($month) . ' ' . $year . ' (' . tanggal_indo($start) . ' - ' . tanggal_indo($end) . ')';
+            $period = ['type' => 'mingguan', 'year' => $year, 'month' => $month, 'week' => $week, 'start' => $start, 'end' => $end];
         } else {
             $month = max(1, min(12, (int) get_param('bulan', date('n'))));
             $year = max(2020, min(2100, (int) get_param('tahun', date('Y'))));
@@ -274,7 +294,7 @@ class LaporanController
         foreach ($rep['les'] as $l) {
             $les[] = ['jenis' => 'Les ' . $l['jenis'], 'qputra' => (float) $l['qputra'], 'qputri' => (float) $l['qputri']];
         }
-        $biaya = array_map(fn ($b) => ['nama' => $b['name'], 'jumlah' => (float) $b['jumlah']], $rep['biaya']);
+        $biaya = array_map(fn ($b) => ['nama' => $b['nama'], 'jumlah' => (float) $b['jumlah']], $rep['biaya']);
         // Setoran OTOMATIS dari transaksi (bukan input manual deposits):
         // QRIS & TRANSFER langsung ke rekening yayasan, TUNAI = setoran uang.
         $pay = $rep['trxPay'] ?? ['TUNAI' => 0, 'QRIS' => 0, 'TRANSFER' => 0];
@@ -324,6 +344,7 @@ class MasterController
             'JENJANG' => (function(){ try{ return class_exists('MasterJenjang') ? (new MasterJenjang())->all('sort_order ASC, name ASC') : []; } catch(Throwable $e){ return []; } })(),
             'KELOMPOK_USIA' => (function(){ try{ return class_exists('MasterKelompokUsia') ? (new MasterKelompokUsia())->all('sort_order ASC, name ASC') : []; } catch(Throwable $e){ return []; } })(),
             'ROMBONGAN' => (function(){ try{ return class_exists('MasterRombongan') ? (new MasterRombongan())->all('name ASC') : []; } catch(Throwable $e){ return []; } })(),
+            'JENIS_BIAYA' => (new MasterExpenseType())->all('name ASC'),
         ];
     }
 
@@ -443,6 +464,10 @@ class MasterController
             $d = ['name'=>(string)post('nama',''),'description'=>(string)(post('deskripsi','')?:null),'is_active'=>post('is_active')==='0'?0:1];
             if($d['name']===''){ flash('error','Nama rombongan wajib.'); redirect('?page=master'); }
             try{ $id ? (new MasterRombongan())->update($id,$d) : (new MasterRombongan())->create($d); flash('success','Rombongan disimpan.'); } catch(Throwable $e){ flash('error','Gagal: '.$e->getMessage()); }
+        } elseif ($act === 'jenis_biaya') {
+            $d = ['name'=>(string)post('nama',''),'is_active'=>post('is_active')==='0'?0:1];
+            if($d['name']===''){ flash('error','Nama jenis biaya wajib.'); redirect('?page=master'); }
+            try{ $id ? (new MasterExpenseType())->update($id,$d) : (new MasterExpenseType())->create($d); flash('success','Jenis biaya disimpan.'); } catch(Throwable $e){ flash('error','Gagal: '.$e->getMessage()); }
         } elseif ($act === 'hapus') {
             $tabel = (string) post('tabel', '');
             $pdo = db();
@@ -505,6 +530,7 @@ class MasterController
                 } elseif ($tabel === 'jenjang' && $id) { (new MasterJenjang())->delete($id); flash('success','Jenjang dihapus.'); }
                 elseif ($tabel === 'kelompok_usia' && $id) { (new MasterKelompokUsia())->delete($id); flash('success','Kelompok usia dihapus.'); }
                 elseif ($tabel === 'rombongan' && $id) { (new MasterRombongan())->delete($id); flash('success','Rombongan dihapus.'); }
+                elseif ($tabel === 'jenis_biaya' && $id) { (new MasterExpenseType())->delete($id); flash('success','Jenis biaya dihapus.'); }
                 elseif (isset(['tiket'=>1,'paket'=>1,'lespaket'=>1,'instruktur'=>1,'user'=>1][$tabel]) && $id) {
                     // fallback (tidak terpakai)
                 }

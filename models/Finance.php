@@ -5,14 +5,21 @@ class OpCost extends Model
     public function monthly(int $year, int $month): array
     {
         return $this->query(
-            "SELECT * FROM operational_costs WHERE DATE_FORMAT(cost_date,'%Y-%m') = ?
-             ORDER BY cost_date DESC, id DESC", [sprintf('%04d-%02d', $year, $month)]);
+            "SELECT oc.*, et.name as expense_type_name FROM operational_costs oc LEFT JOIN expense_types et ON oc.expense_type_id = et.id WHERE DATE_FORMAT(oc.cost_date,'%Y-%m') = ?
+             ORDER BY oc.cost_date DESC, oc.id DESC", [sprintf('%04d-%02d', $year, $month)]);
     }
-    public function total(int $year, int $month): float
+    public function total(int $year, int $month): array
     {
-        return (float) ($this->queryOne(
-            "SELECT COALESCE(SUM(amount),0) t FROM operational_costs WHERE DATE_FORMAT(cost_date,'%Y-%m') = ?",
-            [sprintf('%04d-%02d', $year, $month)])['t'] ?? 0);
+        $rows = $this->query(
+            "SELECT et.name as expense_type_name, COALESCE(SUM(oc.amount),0) t FROM operational_costs oc LEFT JOIN expense_types et ON oc.expense_type_id = et.id WHERE DATE_FORMAT(oc.cost_date,'%Y-%m') = ? GROUP BY et.name", [sprintf('%04d-%02d', $year, $month)]);
+        $out = [];
+        foreach ($rows as $r) $out[$r['expense_type_name']] = (float) $r['t'];
+        return $out;
+    }
+    public function listAll(): array
+    {
+        return $this->query(
+            "SELECT oc.*, et.name as expense_type_name FROM operational_costs oc LEFT JOIN expense_types et ON oc.expense_type_id = et.id ORDER BY oc.cost_date DESC, oc.id DESC");
     }
 }
 

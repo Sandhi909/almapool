@@ -9,11 +9,23 @@ class KasirController
         $editId = (int) get_param('edit', 0);
         if ($editId) {
             $trx = (new Transaction())->find($editId);
-            if ($trx && $trx['payment_status']==='PAID' && $trx['type']==='TIKET' && (time()-strtotime($trx['created_at']) < 24*3600)) {
+            // Semua transaksi PAID (tiket, member, les/private, sewa) boleh diedit.
+            if ($trx && $trx['payment_status'] === 'PAID') {
                 $items = (new Transaction())->items($editId);
-                $edit = ['id'=>$editId, 'trx'=>$trx, 'items'=>$items, 'tarif'=>$items[0]['tariff_day'] ?? 'A'];
+                $tarif = 'A';
+                foreach ($items as $itRow) {
+                    if (in_array($itRow['tariff_day'] ?? '', ['A', 'B', 'C'], true)) {
+                        $tarif = $itRow['tariff_day'];
+                        break;
+                    }
+                }
+                $member = null;
+                if (!empty($trx['member_id'])) {
+                    $member = (new Member())->find((int) $trx['member_id']);
+                }
+                $edit = ['id'=>$editId, 'trx'=>$trx, 'items'=>$items, 'tarif'=>$tarif, 'member'=>$member];
             } else {
-                flash('error','Transaksi tidak bisa diedit (harus tiket PAID <24 jam).');
+                flash('error','Transaksi tidak bisa diedit (hanya transaksi berstatus PAID).');
             }
         }
         try{ $jenjangMaster = class_exists('MasterJenjang') ? (new MasterJenjang())->active() : []; } catch(Throwable $e){ $jenjangMaster=[]; }
@@ -48,7 +60,7 @@ class KasirController
 
         $tarif = in_array($in['tarif'] ?? '', ['A', 'B', 'C'], true) ? $in['tarif'] : 'A';
         $kelas = ($in['kelas'] ?? '') === 'Silver' ? 'SILVER' : 'GOLD';
-        $areaGlobal = in_array($in['area'] ?? '', ['PUTRA', 'PUTRI'], true) ? $in['area'] : 'PUTRA';
+        $areaGlobal = in_array($in['area'] ?? '', ['PUTRA', 'PUTRI', 'CAMPURAN'], true) ? $in['area'] : 'PUTRA';
         $paySingle = in_array($in['payment'] ?? '', ['TUNAI', 'QRIS', 'TRANSFER'], true) ? $in['payment'] : 'TUNAI';
         // Pembayaran gabungan (split): {TUNAI:x, QRIS:y, TRANSFER:z}. Jika tidak dikirim, pakai jalur tunggal lama.
         $paySplit = null;
@@ -58,7 +70,17 @@ class KasirController
                 $paySplit[$m] = max(0, round((float) ($in['payments'][$m] ?? 0), 2));
             }
         }
-        $memberId = (int) ($in['member_id'] ?? 0) ?: null;
+        $editId = (int) ($in['edit_id'] ?? 0);
+        $oldTrx = null;
+        if ($editId) {
+            $oldTrx = (new Transaction())->find($editId);
+            if (!$oldTrx) json_response(['ok' => false, 'message' => 'Transaksi edit tidak ditemukan.'], 404);
+            if ($oldTrx['payment_status'] !== 'PAID') {
+                json_response(['ok' => false, 'message' => 'Transaksi sudah ' . $oldTrx['payment_status'] . ' tidak bisa diedit.'], 422);
+            }
+        }
+        // Saat edit, pertahankan member lama bila frontend tidak mengirim ulang.
+        $memberId = (int) ($in['member_id'] ?? 0) ?: (int) ($oldTrx['member_id'] ?? 0) ?: null;
         // Support maps per-ticket (jenjang, usia, rombongan)
         $rombonganJenjangMap = $in['rombongan_jenjang_map'] ?? [];
         $rombonganNamaMap = $in['rombongan_nama_map'] ?? [];
@@ -78,9 +100,11 @@ class KasirController
         $items = [];
         $type = 'TIKET';
         $areasSeen = [];
+        $sewaNames = [];
         foreach ($in['items'] as $it) {
             $kind = $it['kind'] ?? '';
-            $qty = max(0, (float) ($it['qty'] ?? 0));
+            // Sewa lama tidak mengirim qty (dianggap 1 item).
+            $qty = max(0, (float) ($it['qty'] ?? ($kind === 'sewa' ? 1 : 0)));
             if ($qty <= 0) continue;
             if ($kind === 'tiket') {
                 $t = (new TicketType())->find((int) ($it['ref'] ?? 0));
@@ -126,8 +150,11 @@ class KasirController
             } elseif ($kind === 'sewa') {
                 $amount = to_money($it['amount'] ?? 0);
                 if ($amount <= 0) continue;
-                $items[] = ['item_type' => 'SEWA', 'item_ref_id' => null, 'item_name' => 'Alat Sewa',
-                    'tariff_day' => '-', 'detail' => null, 'quantity' => 1, 'unit_price' => $amount];
+                $sewaName = trim((string) ($it['nama'] ?? '')) ?: 'Alat Sewa';
+                if (mb_strlen($sewaName) > 150) $sewaName = mb_substr($sewaName, 0, 150);
+                $sewaNames[] = $sewaName;
+                $items[] = ['item_type' => 'SEWA', 'item_ref_id' => null, 'item_name' => $sewaName,
+                    'tariff_day' => '-', 'detail' => null, 'quantity' => $qty, 'unit_price' => $amount];
                 if ($type === 'TIKET') $type = 'SEWA';
             }
         }
@@ -164,12 +191,25 @@ class KasirController
         }
         $payCols = Transaction::normalizePay($payDetail, $pay, $totalNow);
 
-        $editId = (int)($in['edit_id'] ?? 0);
+        // Susun catatan transaksi (dipakai untuk transaksi baru maupun edit).
+        $notesParts = ['POS loket'];
+        foreach($rombonganJenjangMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Jenjang: '.$val; } }
+        foreach($rombonganUsiaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Usia: '.$val; } }
+        foreach($rombonganNamaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Rombongan: '.$val; } }
+        if ($type === 'SEWA' && $sewaNames) {
+            // Halaman Sewa memakai kolom notes sebagai keterangan alat.
+            $notesParts = $sewaNames;
+        } elseif ($sewaNames) {
+            $notesParts[] = 'Sewa: ' . implode(', ', $sewaNames);
+        }
+        $notesFinal = implode(' | ', $notesParts);
+
         if ($editId) {
-            $old = $trx->find($editId);
-            if (!$old) json_response(['ok'=>false,'message'=>'Transaksi edit tidak ditemukan.'],404);
-            if ($old['payment_status']!=='PAID') json_response(['ok'=>false,'message'=>'Transaksi sudah '.$old['payment_status'].' tidak bisa diedit.'],422);
-            if (time()-strtotime($old['created_at']) >= 24*3600) json_response(['ok'=>false,'message'=>'Edit hanya dalam 24 jam.'],422);
+            // Jangan ubah jenis transaksi saat edit (mis. tiket menjadi member),
+            // supaya efek samping membership/les tetap konsisten.
+            if (($oldTrx['type'] ?? '') !== $type) {
+                json_response(['ok' => false, 'message' => 'Jenis transaksi tidak bisa diubah saat edit.'], 422);
+            }
             $total = $totalNow;
             // alokasi nomor seri untuk edit (sequential baru)
             foreach($items as &$ei){ if(($ei['item_type']??'')==='TIKET' && !empty($ei['item_ref_id'])){ $row=db()->query('SELECT serial_prefix, serial_next FROM ticket_types WHERE id='.(int)$ei['item_ref_id'])->fetch(); if($row){ $qty=(int)max(1,round((float)$ei['quantity'])); $start=(int)($row['serial_next']??1); $end=$start+$qty-1; $ei['serial_prefix']=$row['serial_prefix']??''; $ei['serial_start']=$start; $ei['serial_end']=$end; } } } unset($ei);
@@ -181,23 +221,22 @@ class KasirController
                 foreach($items as $ei){ if(isset($ei['serial_end'])) $pdo->prepare('UPDATE ticket_types SET serial_next=? WHERE id=?')->execute([(int)$ei['serial_end']+1, (int)$ei['item_ref_id']]); }
                 $st=$pdo->prepare('INSERT INTO transaction_items (transaction_id, item_type, item_ref_id, item_name, tariff_day, detail, quantity, unit_price, subtotal, serial_prefix, serial_start, serial_end) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
                 foreach($items as $it){ $st->execute([$editId,$it['item_type'],$it['item_ref_id'],$it['item_name'],$it['tariff_day'],$it['detail'],$it['quantity'],$it['unit_price'],$it['quantity']*$it['unit_price'],$it['serial_prefix']??null,$it['serial_start']??null,$it['serial_end']??null]); }
-                $pdo->prepare('UPDATE transactions SET type=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, area=?, notes=CONCAT(COALESCE(notes,""), " [EDIT ", NOW(), "]") WHERE id=?')->execute([$type,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$areaFinal,$editId]);
+                // Catatan transaksi diturunkan ulang dari item terbaru (hindari duplikasi "POS loket").
+                $stamp = ' [EDIT ' . date('Y-m-d H:i:s') . ']';
+                $editNotes = mb_substr($notesFinal, 0, max(0, 255 - mb_strlen($stamp))) . $stamp;
+                $pdo->prepare('UPDATE transactions SET type=?, member_id=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, area=?, notes=? WHERE id=?')->execute([$type,$memberId,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$areaFinal,$editNotes,$editId]);
                 $pdo->commit();
             } catch(Throwable $e){ if($pdo->inTransaction()) $pdo->rollBack(); json_response(['ok'=>false,'message'=>'Gagal edit: '.$e->getMessage()],500); }
             $row = $trx->find($editId);
             json_response(['ok'=>true,'message'=>'Transaksi diperbarui.','number'=>$row['number'],'total'=>(float)$row['amount'],'receipt_id'=>$editId]);
         }
 
-        $notesParts = ['POS loket'];
-        foreach($rombonganJenjangMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Jenjang: '.$val; } }
-        foreach($rombonganUsiaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Usia: '.$val; } }
-        foreach($rombonganNamaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Rombongan: '.$val; } }
         $id = $trx->checkout([
             'type' => $type, 'member_id' => $memberId, 'payment_method' => $pay,
             'pay' => $payDetail,
             'cashier_id' => (int) auth_user()['id'], 'area' => $areaFinal,
             'paid_amount' => $pay === 'GABUNGAN' ? $totalNow : (to_money($paidSplit ?? ($in['tendered'] ?? 0)) ?: null),
-            'notes' => implode(' | ', $notesParts),
+            'notes' => $notesFinal,
         ], $items);
 
         // Aktifkan/perpanjang membership untuk item member.

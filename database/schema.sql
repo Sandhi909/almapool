@@ -213,12 +213,20 @@ CREATE TABLE IF NOT EXISTS lesson_sessions (
 CREATE TABLE IF NOT EXISTS operational_costs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   cost_date DATE NOT NULL,
-  name VARCHAR(150) NOT NULL,
+  expense_type_id INT NOT NULL,
   amount DECIMAL(14,2) NOT NULL DEFAULT 0,
   notes VARCHAR(255) NULL,
   created_by INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (expense_type_id) REFERENCES expense_types(id),
   FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS expense_types (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS deposits (

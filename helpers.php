@@ -77,6 +77,33 @@ function weekBounds(int $year, int $week): array
     return [$start, $end];
 }
 
+/**
+ * Batas minggu laporan per bulan (konsisten 4 minggu):
+ * minggu 1 = tgl 1-7, minggu 2 = 8-14, minggu 3 = 15-21,
+ * minggu 4 = 22 s.d. akhir bulan (28/29/30/31 menyesuaikan bulan).
+ *
+ * @return array{0:string,1:string} [start, end] sebagai 'Y-m-d'.
+ */
+function weekOfMonthBounds(int $year, int $month, int $week): array
+{
+    $month = max(1, min(12, $month));
+    $week = max(1, min(4, $week));
+    $lastDay = (int) date('t', mktime(0, 0, 0, $month, 1, $year));
+    $startDay = ($week - 1) * 7 + 1;
+    $endDay = $week === 4 ? $lastDay : $startDay + 6;
+    return [
+        sprintf('%04d-%02d-%02d', $year, $month, $startDay),
+        sprintf('%04d-%02d-%02d', $year, $month, $endDay),
+    ];
+}
+
+/** Nomor minggu berjalan dalam bulan (1-4) untuk tanggal tertentu. */
+function current_week_of_month(?string $date = null): int
+{
+    $day = (int) date('j', $date ? strtotime($date) : time());
+    return max(1, min(4, (int) ceil($day / 7)));
+}
+
 function initials(string $name): string
 {
     $parts = preg_split('/\s+/', trim($name));

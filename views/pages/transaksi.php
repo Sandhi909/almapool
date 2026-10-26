@@ -55,7 +55,8 @@
       <thead><tr><th>Nomor</th><th>Waktu</th><th>Jenis</th><th>Kolam</th><th>Kasir</th><th class="text-end">Total</th><th>Metode</th><th>Status</th><th>Aksi</th></tr></thead>
       <tbody>
         <?php foreach ($TRANSAKSI as $tr):
-          $canRefund = $tr['payment_status']==='PAID' && $tr['type']==='TIKET' && (time()-strtotime($tr['created_at']) < 24*3600);
+          $canEdit = $tr['payment_status']==='PAID';
+          $canRefund = $canEdit && $tr['type']==='TIKET' && (time()-strtotime($tr['created_at']) < 24*3600);
           $isCancelled = $tr['payment_status']==='CANCELLED';
         ?>
         <tr>
@@ -81,10 +82,12 @@
               <?php endif; ?>
               <?php if ($isCancelled): ?>
                 <span class="btn btn-light border disabled" title="Sudah di-refund"><i class="bi bi-x-circle text-danger"></i></span>
-              <?php elseif ($canRefund): ?>
-                <a class="btn btn-outline-primary" href="<?= url('index.php?page=kasir&edit='.(int)$tr['id']) ?>" title="Edit langsung di Kasir — kasir terisi otomatis"><i class="bi bi-pencil-square"></i></a>
+              <?php elseif ($canEdit): ?>
+                <a class="btn btn-outline-primary" href="<?= url('index.php?page=kasir&edit='.(int)$tr['id']) ?>" title="Edit transaksi — kasir terisi otomatis"><i class="bi bi-pencil-square"></i></a>
+                <?php if ($canRefund): ?>
                 <button class="btn btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#refundModal<?= (int)$tr['id'] ?>" title="Refund — isi keterangan"><i class="bi bi-arrow-counterclockwise"></i></button>
-              <?php elseif ($tr['type']==='TIKET'): ?><button class="btn btn-outline-secondary" type="button" disabled title="Lewat 24 jam tidak bisa edit/refund"><i class="bi bi-pencil-square"></i></button><?php endif; ?>
+                <?php endif; ?>
+              <?php else: ?><button class="btn btn-outline-secondary" type="button" disabled title="Transaksi tidak bisa diedit"><i class="bi bi-pencil-square"></i></button><?php endif; ?>
             </div>
           </td>
         </tr>
@@ -138,18 +141,23 @@
         <button class="btn btn-tt btn-sm ms-auto" type="button" data-bs-toggle="modal" data-bs-target="#biayaModal"><i class="bi bi-plus-lg me-1"></i>Tambah Biaya</button>
       </div>
       <div class="table-responsive"><table class="table tt-table align-middle mb-0">
-        <thead><tr><th>Tanggal</th><th>Uraian</th><th class="text-end">Jumlah (Rp)</th><th></th></tr></thead>
+        <thead><tr><th>Tanggal</th><th>Jenis Biaya</th><th>Keterangan</th><th class="text-end">Jumlah (Rp)</th><th></th></tr></thead>
         <tbody>
           <?php foreach ($BIAYA as $b): ?>
-          <tr><td class="num"><?= e(date('d/m', strtotime($b['cost_date']))) ?></td><td><?= e($b['name']) ?></td>
+          <tr><td class="num"><?= e(date('d/m', strtotime($b['cost_date']))) ?></td><td><b><?= e($b['expense_type_name'] ?: $b['name']) ?></b></td>
+            <td class="small text-muted"><?= e($b['notes'] ?: '-') ?></td>
             <td class="text-end num"><?= number_format($b['amount'], 0, ',', '.') ?></td>
-            <td><?php if (is_admin()): ?>
+            <td class="text-nowrap">
+              <button class="btn btn-light btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#biayaModal"
+                data-row='<?= e(json_encode($b, JSON_HEX_APOS | JSON_HEX_QUOT)) ?>' title="Edit"><i class="bi bi-pencil-square"></i></button>
+              <?php if (is_admin()): ?>
               <form method="post" action="<?= url('index.php?page=transaksi') ?>" class="d-inline" onsubmit="return confirm('Hapus biaya ini?')">
                 <?= csrf_field() ?><input type="hidden" name="action" value="hapus-biaya"><input type="hidden" name="id" value="<?= $b['id'] ?>">
                 <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
-              </form><?php endif; ?></td></tr>
+              </form><?php endif; ?>
+            </td></tr>
           <?php endforeach; ?>
-          <tr class="fw-bold"><td colspan="2">Total Biaya Operasional</td><td class="text-end num"><?= number_format($totBiaya, 0, ',', '.') ?></td><td></td></tr>
+          <tr class="fw-bold"><td colspan="3">Total Biaya Operasional</td><td class="text-end num"><?= number_format($totBiaya, 0, ',', '.') ?></td><td></td></tr>
         </tbody></table></div>
     </div>
   </div>
@@ -173,19 +181,42 @@
 <div class="modal fade" id="biayaModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content" style="border-radius:20px" method="post" action="<?= url('index.php?page=transaksi') ?>">
-      <?= csrf_field() ?><input type="hidden" name="action" value="biaya">
-      <div class="modal-header"><h5 class="modal-title fw-bold">Tambah Biaya Operasional</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <?= csrf_field() ?><input type="hidden" name="action" value="biaya"><input type="hidden" name="id" class="f-id" value="">
+      <div class="modal-header"><h5 class="modal-title fw-bold">Biaya Operasional</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body row g-3">
-        <div class="col-6"><label class="form-label fw-semibold">Tanggal</label><input type="date" class="form-control" name="tanggal" value="<?= date('Y-m-d') ?>"></div>
-        <div class="col-6"><label class="form-label fw-semibold">Jumlah (Rp)</label><input class="form-control num" name="jumlah" inputmode="numeric" required></div>
-        <div class="col-12"><label class="form-label fw-semibold">Uraian</label>
-          <input class="form-control" name="nama" list="biayaList" required placeholder="cth: Backwash">
-          <datalist id="biayaList"><option value="Backwash"></option><option value="Pembelian Refil Galon"></option><option value="Penggantian Listrik"></option><option value="Makan PJ Rombongan (NATURA)"></option></datalist></div>
-        <div class="col-12"><label class="form-label fw-semibold">Keterangan</label><textarea class="form-control" name="keterangan" rows="2"></textarea></div>
+        <div class="col-6"><label class="form-label fw-semibold">Tanggal</label><input type="date" class="form-control f-tanggal" name="tanggal" value="<?= date('Y-m-d') ?>"></div>
+        <div class="col-6"><label class="form-label fw-semibold">Jumlah (Rp)</label><input class="form-control num f-jumlah" name="jumlah" inputmode="numeric" required></div>
+        <div class="col-12"><label class="form-label fw-semibold">Jenis Biaya</label>
+          <select class="form-select f-type" name="expense_type_id" required>
+            <option value="">-- Pilih Jenis Biaya --</option>
+            <?php foreach ($EXPENSE_TYPES as $et): ?>
+            <option value="<?= $et['id'] ?>"><?= e($et['name']) ?></option>
+            <?php endforeach; ?>
+          </select></div>
+        <div class="col-12"><label class="form-label fw-semibold">Keterangan</label><textarea class="form-control f-keterangan" name="keterangan" rows="2"></textarea></div>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-tt" type="submit">Simpan</button></div>
     </form>
   </div>
 </div>
+
+<?php ob_start(); ?>
+<script>
+document.getElementById('biayaModal')?.addEventListener('show.bs.modal', function (ev) {
+  const b = ev.relatedTarget;
+  const row = b && b.dataset.row ? JSON.parse(b.dataset.row) : null;
+  const modal = this;
+  const idField = modal.querySelector('.f-id');
+  const isEdit = row && row.id;
+  idField.value = isEdit ? row.id : '';
+  modal.querySelector('input[name="action"]').value = isEdit ? 'edit-biaya' : 'biaya';
+  modal.querySelector('.f-tanggal').value = row && row.cost_date ? row.cost_date : '<?= date('Y-m-d') ?>';
+  modal.querySelector('.f-jumlah').value = row && row.amount ? row.amount : '';
+  modal.querySelector('.f-type').value = row && row.expense_type_id ? row.expense_type_id : '';
+  modal.querySelector('.f-keterangan').value = row && row.notes ? row.notes : '';
+  modal.querySelector('.modal-title').textContent = isEdit ? 'Edit Biaya Operasional' : 'Tambah Biaya Operasional';
+});
+</script>
+<?php $pageScripts = ob_get_clean(); ?>
 
 

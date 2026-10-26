@@ -13,11 +13,12 @@ class KunjunganController
             $periode = hari_tanggal_indo($date);
             $period = ['type'=>'harian','date'=>$date];
         } elseif ($type === 'mingguan') {
-            $week = max(1, (int) get_param('minggu', (int)date('W')));
+            $month = max(1, min(12, (int) get_param('bulan', date('n'))));
+            $week = max(1, min(4, (int) get_param('minggu', current_week_of_month())));
             $year = max(2020, min(2100, (int) get_param('tahun', date('Y'))));
-            [$start,$end] = weekBounds($year,$week);
-            $periode = 'Minggu '.$week.' / '.$year.' ('.tanggal_indo($start).' - '.tanggal_indo($end).')';
-            $period = ['type'=>'mingguan','year'=>$year,'week'=>$week,'start'=>$start,'end'=>$end];
+            [$start,$end] = weekOfMonthBounds($year,$month,$week);
+            $periode = 'Minggu ke-'.$week.' '.bulan_indo($month).' '.$year.' ('.tanggal_indo($start).' - '.tanggal_indo($end).')';
+            $period = ['type'=>'mingguan','year'=>$year,'month'=>$month,'week'=>$week,'start'=>$start,'end'=>$end];
         } elseif ($type === 'rentang') {
             $a = (string) get_param('tgl_awal', date('Y-m-d'));
             $b = (string) get_param('tgl_akhir', date('Y-m-d'));

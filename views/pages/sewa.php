@@ -40,7 +40,14 @@
           <td><?= e($t['notes'] ?: 'Sewa alat') ?></td>
           <td><b><?= rupiah($t['amount']) ?></b></td>
           <td><span class="pill <?= $t['payment_method'] === 'TUNAI' ? 'pill-green' : 'pill-blue' ?>"><?= e($t['payment_method']) ?></span></td>
-          <td><a class="btn btn-light btn-sm" href="<?= url('index.php?page=struk&id=' . (int) $t['id']) ?>" target="_blank"><i class="bi bi-receipt"></i> Struk</a></td>
+          <td class="text-nowrap">
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-light border" href="<?= url('index.php?page=struk&id=' . (int) $t['id']) ?>" target="_blank" title="Struk"><i class="bi bi-receipt"></i></a>
+              <?php if (($t['payment_status'] ?? '') === 'PAID'): ?>
+              <a class="btn btn-outline-primary" href="<?= url('index.php?page=kasir&edit=' . (int) $t['id']) ?>" title="Edit transaksi sewa"><i class="bi bi-pencil-square"></i></a>
+              <?php endif; ?>
+            </div>
+          </td>
         </tr>
         <?php endforeach; ?>
       </tbody>

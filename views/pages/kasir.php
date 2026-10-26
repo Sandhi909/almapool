@@ -214,7 +214,8 @@ $settings = $settings ?? [];
           <thead><tr><th>No.</th><th>Waktu</th><th>Jenis</th><th>Kolam</th><th>Total</th><th>Metode</th><th></th></tr></thead>
           <tbody>
             <?php foreach (array_slice($TRANSAKSI,0,5) as $tr): 
-              $canRefundK = $tr['payment_status']==='PAID' && $tr['type']==='TIKET' && (time()-strtotime($tr['created_at']) < 24*3600);
+              $canEditK = $tr['payment_status']==='PAID';
+              $canRefundK = $canEditK && $tr['type']==='TIKET' && (time()-strtotime($tr['created_at']) < 24*3600);
             ?>
             <tr>
               <td class="num fw-bold" style="color:#0284c7"><?= e($tr['number']) ?></td>
@@ -231,11 +232,13 @@ $settings = $settings ?? [];
                   <?php endif; ?>
                   <?php if($tr['payment_status']==='CANCELLED'): ?>
                     <span class="btn btn-light border disabled" title="Refunded"><i class="bi bi-x-circle text-danger"></i></span>
-                  <?php elseif($canRefundK): ?>
-                    <a class="btn btn-outline-primary" href="<?= url('index.php?page=kasir&edit='.(int)$tr['id']) ?>" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                  <?php elseif($canEditK): ?>
+                    <a class="btn btn-outline-primary" href="<?= url('index.php?page=kasir&edit='.(int)$tr['id']) ?>" title="Edit transaksi"><i class="bi bi-pencil-square"></i></a>
+                    <?php if($canRefundK): ?>
                     <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#refundModalK<?= (int)$tr['id'] ?>" title="Refund"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <?php endif; ?>
                   <?php else: ?>
-                    <button class="btn btn-outline-secondary" type="button" disabled title="Lewat 24 jam"><i class="bi bi-pencil-square"></i></button>
+                    <button class="btn btn-outline-secondary" type="button" disabled title="Transaksi tidak bisa diedit"><i class="bi bi-pencil-square"></i></button>
                   <?php endif; ?>
                 </div>
               </td>
@@ -334,6 +337,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let kelas = 'Gold';
   let memberId = 0;
   let studentId = 0;
+  let payMethod = 'TUNAI';
   const editData = <?= !empty($EDIT) ? json_encode($EDIT, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT) : 'null' ?>;
   if(editData){ tarif = editData.tarif || tarif; }
   const fmt = n => 'Rp' + n.toLocaleString('id-ID');
@@ -402,6 +406,7 @@ document.addEventListener('DOMContentLoaded', function () {
     syncRombonganExtra();
     render();
   }
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function render() {
     const list = $('cartList');
     const ids = Object.keys(cart).filter(k => cart[k].qty > 0);
@@ -415,18 +420,48 @@ document.addEventListener('DOMContentLoaded', function () {
       if(it.area) areas.add(it.area);
       const areaBadge = it.area ? '<span class="badge '+(it.area==='PUTRI'?'bg-white border text-danger':'bg-primary')+'" style="font-size:.62rem">'+it.area+'</span> ' : '';
       const extraBadges = [];
-      if(it.jenjang) extraBadges.push('<span class="badge bg-info" style="font-size:.62rem">'+it.jenjang+'</span>');
-      if(it.usia) extraBadges.push('<span class="badge bg-success" style="font-size:.62rem">'+it.usia+'</span>');
-      if(it.rombongan) extraBadges.push('<span class="badge bg-warning text-dark" style="font-size:.62rem">'+it.rombongan+'</span>');
+      if(it.jenjang) extraBadges.push('<span class="badge bg-info" style="font-size:.62rem">'+esc(it.jenjang)+'</span>');
+      if(it.usia) extraBadges.push('<span class="badge bg-success" style="font-size:.62rem">'+esc(it.usia)+'</span>');
+      if(it.rombongan) extraBadges.push('<span class="badge bg-warning text-dark" style="font-size:.62rem">'+esc(it.rombongan)+'</span>');
+      let nameHtml = '<b style="font-size:.85rem">' + esc(it.nama) + '</b>';
+      let priceHtml = '<small class="text-muted">' + fmt(it.harga) + ' × ' + it.qty + '</small>';
+      if (it.kind === 'sewa') {
+        nameHtml = '<input class="form-control form-control-sm mb-1" data-sewa-name="'+k+'" value="'+esc(it.nama)+'" placeholder="Keterangan sewa" style="font-size:.8rem">';
+        priceHtml = '<div class="input-group input-group-sm" style="max-width:150px"><span class="input-group-text bg-white">Rp</span><input type="number" class="form-control num" data-sewa-price="'+k+'" value="'+it.harga+'" min="0" step="1000"></div>';
+      }
       const row = document.createElement('div');
-      row.className = 'd-flex align-items-center gap-2 p-2 rounded-3';
+      row.className = 'd-flex align-items-center gap-2 p-2 rounded-3 flex-wrap';
       row.style.background = '#f0f9ff';
       row.style.border = '1px solid #e0f2fe';
-      row.innerHTML = '<div class="flex-fill">'+areaBadge+' '+(extraBadges.join(' '))+'<br><b style="font-size:.85rem">' + it.nama + '</b><br><small class="text-muted">' + fmt(it.harga) + ' × ' + it.qty + '</small></div>'
-        + '<b class="num" style="color:#0ea5e9">' + fmt(it.qty * it.harga) + '</b><button class="btn btn-sm btn-outline-danger ms-1" data-del="'+k+'" title="Hapus"><i class="bi bi-x-lg"></i></button>';
+      row.innerHTML = '<div class="flex-fill">'+areaBadge+' '+(extraBadges.join(' '))+'<br>'+nameHtml+'<br>'+priceHtml+'</div>'
+        + '<div class="d-flex align-items-center gap-1"><button class="btn btn-sm btn-light border" type="button" data-cart-minus="'+k+'" title="Kurangi">−</button>'
+        + '<b class="num px-1">'+it.qty+'</b>'
+        + '<button class="btn btn-sm btn-light border" type="button" data-cart-plus="'+k+'" title="Tambah">+</button></div>'
+        + '<b class="num" style="color:#0ea5e9">' + fmt(it.qty * it.harga) + '</b><button class="btn btn-sm btn-outline-danger ms-1" type="button" data-del="'+k+'" title="Hapus"><i class="bi bi-x-lg"></i></button>';
       list.appendChild(row);
     });
     list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{ delete cart[b.dataset.del]; render(); }));
+    list.querySelectorAll('[data-cart-minus],[data-cart-plus]').forEach(b=>b.addEventListener('click', function(){
+      const key = this.dataset.cartMinus || this.dataset.cartPlus;
+      if (!cart[key]) return;
+      const delta = this.dataset.cartPlus ? 1 : -1;
+      const q = Math.max(0, (parseFloat(cart[key].qty) || 0) + delta);
+      cart[key].qty = q;
+      syncInput(key, q);
+      render();
+    }));
+    list.querySelectorAll('[data-sewa-price]').forEach(inp=>inp.addEventListener('change', function(){
+      const key = this.dataset.sewaPrice;
+      if (!cart[key]) return;
+      cart[key].harga = Math.max(0, parseFloat(this.value) || 0);
+      render();
+    }));
+    list.querySelectorAll('[data-sewa-name]').forEach(inp=>inp.addEventListener('change', function(){
+      const key = this.dataset.sewaName;
+      if (!cart[key]) return;
+      cart[key].nama = this.value.trim() || 'Alat Sewa';
+      render();
+    }));
     $('cartCount').textContent = count + ' item';
     let areaLabel = '—';
     if(areas.size===1) areaLabel=[...areas][0];
@@ -436,25 +471,103 @@ document.addEventListener('DOMContentLoaded', function () {
     $('cartTotal').dataset.value = total;
     hitungKembali();
   }
-  // prefill jika mode edit transaksi
+  // prefill jika mode edit transaksi (tiket, member, les/private, sewa)
   if(editData && editData.items){
-    editData.items.forEach(it=>{
-      // mapping: hanya tiket yang auto-isi, member/les diabaikan (edit tiket saja sesuai permintaan)
-      if((it.item_type||'').toUpperCase()==='TIKET'){
+    if(editData.member){
+      memberId = editData.member.id;
+      $('memberPicked').innerHTML = 'Member: <b>' + esc(editData.member.member_number) + ' — ' + esc(editData.member.name) + '</b>';
+      $('memberSearch').value = editData.member.member_number || '';
+    }
+    let editKelas = null;
+    editData.items.forEach((it, idx)=>{
+      const type = (it.item_type||'').toUpperCase();
+      const qty = parseFloat(it.quantity)||0;
+      if(qty<=0) return;
+      const harga = parseFloat(it.unit_price)||0;
+      if(type==='TIKET'){
         const area = (it.detail==='PUTRI'?'PUTRI':'PUTRA');
-        const key = 'tiket-'+it.item_ref_id+'-'+area.toLowerCase();
-        const el = document.querySelector('[data-key=\"'+key+'\"]');
-        if(el){
-          const qty = parseInt(it.quantity,10)||0;
-          cart[key]={kind:'tiket',ref:it.item_ref_id,detail:'',area:area,nama:it.item_name+' ('+area+') ('+'Tarif '+(editData.tarif||tarif)+')',harga:parseFloat(it.unit_price),qty:qty};
-          const inp=document.getElementById('qty-'+key);
-          if(inp) inp.value=qty;
+        const key = 'edit-tiket-'+it.id;
+        // Ambil kembali jenjang/usia/rombongan dari nama item (format: "Tiket Nama - Jenjang - Usia - Rombongan").
+        const card = document.querySelector('[data-flex-add][data-ref="'+it.item_ref_id+'"]')?.closest('.tiket-card');
+        const needJ = !!card?.querySelector('.rombongan-jenjang-input');
+        const needU = !!card?.querySelector('.rombongan-usia-input');
+        const needN = !!card?.querySelector('.rombongan-nama-input');
+        const parts = String(it.item_name||'').split(' - ');
+        let pi = parts.length;
+        const rb = needN ? (parts[--pi]||'') : '';
+        const us = needU ? (parts[--pi]||'') : '';
+        const jn = needJ ? (parts[--pi]||'') : '';
+        if(needJ){ const el = document.getElementById('rombongan-jenjang-'+it.item_ref_id); if(el) el.value = jn; }
+        if(needU){ const el = document.getElementById('rombongan-usia-'+it.item_ref_id); if(el) el.value = us; }
+        if(needN){
+          const el = document.getElementById('rombongan-nama-'+it.item_ref_id);
+          if(el){
+            if([...el.options].some(o=>o.value===rb)) el.value = rb;
+            else if(rb){ el.value='__custom'; const c=document.getElementById('rombongan-nama-custom-'+it.item_ref_id); if(c){ c.classList.remove('d-none'); c.value=rb; } }
+          }
         }
+        cart[key] = {kind:'tiket', ref:it.item_ref_id, detail:area, area:area,
+          nama:it.item_name+' ('+area+') (Tarif '+(editData.tarif||tarif)+')',
+          harga:harga, qty:qty, jenjang:jn, usia:us, rombongan:rb};
+      } else if(type==='MEMBER'){
+        const pkgName = String(it.item_name||'').replace(/^Member\s+/i,'').trim();
+        const key = 'member-'+pkgName;
+        editKelas = (it.detail||'Gold');
+        cart[key] = {kind:'member', ref:it.item_ref_id, detail:'', area:'', nama:it.item_name,
+          harga:harga, qty:qty, jenjang:'', usia:'', rombongan:''};
+        const span = document.getElementById('qty-'+key);
+        if(span) span.textContent = qty;
+      } else if(type==='LES'){
+        const gender = (it.detail==='Putri'?'Putri':'Putra');
+        const key = 'les-'+it.item_ref_id+'-'+gender.toLowerCase();
+        cart[key] = {kind:'les', ref:it.item_ref_id, detail:gender, area:'', nama:it.item_name+' '+gender,
+          harga:harga, qty:qty, jenjang:'', usia:'', rombongan:''};
+        const span = document.getElementById('qty-'+key);
+        if(span) span.textContent = qty;
+      } else if(type==='SEWA'){
+        const key = 'sewa-edit-'+(it.id||idx);
+        cart[key] = {kind:'sewa', ref:0, detail:'', area:'', nama:it.item_name||'Alat Sewa',
+          harga:harga, qty:qty, jenjang:'', usia:'', rombongan:''};
       }
     });
+    // Tampilkan tarif yang dipakai transaksi.
+    tarif = editData.tarif || tarif;
+    document.querySelectorAll('#tarifGroup [data-tarif]').forEach(x=>{
+      const on = x.dataset.tarif===tarif;
+      x.classList.toggle('btn-tt', on);
+      x.classList.toggle('btn-outline-secondary', !on);
+    });
+    document.querySelectorAll('.tarif-lbl').forEach(el=>el.textContent='Tarif '+tarif);
+    document.querySelectorAll('.price').forEach(p=>{
+      const v = +(p.dataset[tarif.toLowerCase()]||0);
+      p.textContent = v ? fmt(v) : '-';
+    });
+    // Tampilkan kelas member yang dipakai transaksi.
+    if(editKelas){
+      kelas = editKelas;
+      document.querySelectorAll('#kelasGroup [data-kelas]').forEach(x=>{
+        const on = x.dataset.kelas===kelas;
+        x.classList.toggle('btn-tt', on);
+        x.classList.toggle('btn-outline-secondary', !on);
+      });
+      document.querySelectorAll('.kelas-lbl').forEach(el=>el.textContent=kelas);
+      const k = kelas==='Gold'?'gold':'silver';
+      document.querySelectorAll('.mprice').forEach(p=>p.textContent=fmt(+p.dataset[k]));
+    }
+    // Prefill metode pembayaran.
+    payMethod = editData.trx.payment_method || 'TUNAI';
+    document.querySelectorAll('.pay-opt').forEach(x=>x.classList.toggle('active', x.dataset.pay===payMethod));
+    const isSplit = payMethod==='GABUNGAN';
+    $('splitBox').classList.toggle('d-none', !isSplit);
+    $('singleCashBox').classList.toggle('d-none', isSplit);
+    if(isSplit){
+      $('splitTunai').value = (+editData.trx.pay_tunai||0).toLocaleString('id-ID');
+      $('splitQris').value = (+editData.trx.pay_qris||0).toLocaleString('id-ID');
+      $('splitTransfer').value = (+editData.trx.pay_transfer||0).toLocaleString('id-ID');
+    }
     // ubah tombol bayar
     const btnBayarEl=document.getElementById('btnBayar');
-    if(btnBayarEl) btnBayarEl.innerHTML='<i class=\"bi bi-save me-2\"></i>SIMPAN PERUBAHAN';
+    if(btnBayarEl) btnBayarEl.innerHTML='<i class="bi bi-save me-2"></i>SIMPAN PERUBAHAN';
   }
 
   document.querySelectorAll('.qty-btn').forEach(b => b.addEventListener('click', function () {
@@ -532,7 +645,7 @@ document.addEventListener('DOMContentLoaded', function () {
     Object.keys(cart).forEach(k2 => {
       if (cart[k2].kind === 'member') {
         const btn = document.querySelector('[data-key="' + k2 + '"][data-act="plus"]');
-        if (btn) { cart[k2].harga = priceOf(btn); cart[k2].nama = btn.dataset.nama + ' (' + kelas + ')'; }
+        if (btn) { cart[k2].harga = priceOf(btn); cart[k2].ref = btn.dataset.ref || cart[k2].ref; cart[k2].nama = btn.dataset.nama + ' (' + kelas + ')'; }
       }
     });
     render();
@@ -598,7 +711,6 @@ document.addEventListener('DOMContentLoaded', function () {
     $('sewaNominal').value = '';
     render();
   });
-  let payMethod = 'TUNAI';
   document.querySelectorAll('.pay-opt').forEach(p => p.addEventListener('click', function () {
     document.querySelectorAll('.pay-opt').forEach(x => x.classList.remove('active'));
     this.classList.add('active');
@@ -737,6 +849,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const items = Object.keys(cart).filter(k => cart[k].qty > 0).map(k => ({
       kind: cart[k].kind, ref: cart[k].ref, detail: cart[k].detail || '',
       area: cart[k].area || '', qty: cart[k].qty, amount: cart[k].kind === 'sewa' ? cart[k].harga : 0,
+      nama: cart[k].kind === 'sewa' ? cart[k].nama : '',
       jenjang: cart[k].jenjang || '', usia: cart[k].usia || '', rombongan: cart[k].rombongan || ''
     }));
     const isEdit = !!(editData && editData.id);
@@ -747,7 +860,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let areaGlobal = 'PUTRA';
         if(cartAreas.length===1) areaGlobal=cartAreas[0];
         else if(cartAreas.length>1) areaGlobal='CAMPURAN';
-        else if(cartAreas.length===0) areaGlobal='PUTRA';
+        else if(cartAreas.length===0) areaGlobal = editData ? (editData.trx.area || 'PUTRA') : 'PUTRA';
         const payload={ tarif: tarif, kelas: kelas, area: areaGlobal, payment: pay, payments: payments, tendered: tendered, member_id: memberId, student_id: studentId, items: items, rombongan_jenjang_map: rombonganJenjangMap, rombongan_nama_map: rombonganNamaMap, rombongan_usia_map: rombonganUsiaMap };
         if(editData && editData.id) payload.edit_id=editData.id;
         fetch('<?= url('index.php?page=kasir&ajax=checkout') ?>', {

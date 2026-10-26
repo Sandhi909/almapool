@@ -74,8 +74,9 @@ class Report extends Model
              WHERE ti.item_type = 'SEWA' AND $txnWhere AND t.payment_status = 'PAID'", $txnParams)['t'] ?? 0);
 
         $biaya = $this->query(
-            "SELECT name, COALESCE(SUM(amount),0) jumlah FROM operational_costs
-             WHERE $costWhere GROUP BY name ORDER BY MIN(id)", $costParams);
+            "SELECT COALESCE(et.name, 'Biaya Lainnya') nama, COALESCE(SUM(oc.amount),0) jumlah FROM operational_costs oc
+             LEFT JOIN expense_types et ON oc.expense_type_id = et.id
+             WHERE $costWhere GROUP BY oc.expense_type_id ORDER BY MIN(oc.id)", $costParams);
 
         $dep = $this->query(
             "SELECT kind, COALESCE(SUM(amount),0) jumlah FROM deposits

@@ -88,6 +88,11 @@ $keYab = $cashbon + $L['setoran'][2]['jumlah'];
 $type = $TYPE ?? 'bulanan';
 $P = $PERIOD ?? [];
 $judulLap = ['harian' => 'HARIAN', 'mingguan' => 'MINGGUAN', 'bulanan' => 'BULANAN'][$type] ?? 'BULANAN';
+// Periode mingguan selalu 4 minggu per bulan: 1-7, 8-14, 15-21, 22-akhir bulan.
+$lapMonth = (int) ($P['month'] ?? date('n'));
+$lapYear = (int) ($P['year'] ?? date('Y'));
+$lapWeek = (int) ($P['week'] ?? current_week_of_month());
+$lapLastDay = (int) date('t', mktime(0, 0, 0, $lapMonth, 1, $lapYear));
 ?>
 <div class="kasir-hero p-3 p-md-4 mb-3 d-flex flex-wrap align-items-center gap-3 position-relative no-print" style="z-index:1">
   <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1">
@@ -116,10 +121,22 @@ $judulLap = ['harian' => 'HARIAN', 'mingguan' => 'MINGGUAN', 'bulanan' => 'BULAN
       <span id="grpHarian" class="d-none"><input type="date" name="tanggal" class="form-control form-control-sm" style="max-width:200px" value="<?= e($P['date'] ?? date('Y-m-d')) ?>"></span>
 
       <span id="grpMingguan" class="d-none d-flex align-items-center gap-1">
-        <input type="number" name="minggu" min="1" max="53" class="form-control form-control-sm" style="max-width:90px" value="<?= e($P['week'] ?? date('W')) ?>">
+        <select name="bulan" class="form-select form-select-sm" style="max-width:130px">
+          <?php for ($b = 1; $b <= 12; $b++): ?>
+          <option value="<?= $b ?>" <?= $b == $lapMonth ? 'selected' : '' ?>><?= bulan_indo($b) ?></option>
+          <?php endfor; ?>
+        </select>
+        <select name="minggu" class="form-select form-select-sm" style="max-width:170px">
+          <?php for ($w = 1; $w <= 4; $w++):
+            $awal = ($w - 1) * 7 + 1;
+            $akhir = $w === 4 ? $lapLastDay : $awal + 6;
+          ?>
+          <option value="<?= $w ?>" <?= $w === $lapWeek ? 'selected' : '' ?>>Minggu <?= $w ?> (<?= $awal ?>-<?= $akhir ?>)</option>
+          <?php endfor; ?>
+        </select>
         <select name="tahun" class="form-select form-select-sm" style="max-width:100px">
           <?php for ($t = 2024; $t <= 2027; $t++): ?>
-          <option value="<?= $t ?>" <?= $t == ($P['year'] ?? date('Y')) ? 'selected' : '' ?>><?= $t ?></option>
+          <option value="<?= $t ?>" <?= $t == $lapYear ? 'selected' : '' ?>><?= $t ?></option>
           <?php endfor; ?>
         </select>
       </span>
@@ -176,15 +193,14 @@ $judulLap = ['harian' => 'HARIAN', 'mingguan' => 'MINGGUAN', 'bulanan' => 'BULAN
   </table>
   <table>
     <thead>
-      <tr><th colspan="13" style="text-align:left">II.&nbsp;&nbsp;Penerimaan</th></tr>
-      <tr><th style="width:26px">A</th><th>Tiket</th><th class="c">Warna<br>Tiket</th><th class="c" colspan="2">Nomor seri Tiket</th><th class="c" colspan="2">Tarif A</th><th class="c" colspan="2">Tarif B</th><th class="c" colspan="2">Tarif C</th><th class="c">JMLH /<br>WARNA</th><th class="c" style="white-space:nowrap;width:140px">Jumlah (Rp)</th></tr>
-      <tr><th></th><th></th><th></th><th class="c">Awal</th><th class="c">Akhir</th><th class="c">(Rp)</th><th class="c">Lbr</th><th class="c">(Rp)</th><th class="c">Lbr</th><th class="c">(Rp)</th><th class="c">Lbr</th><th></th><th></th></tr>
+      <tr><th colspan="10" style="text-align:left">II.&nbsp;&nbsp;Penerimaan</th></tr>
+      <tr><th style="width:26px">A</th><th>Tiket</th><th class="c" colspan="2">Tarif A</th><th class="c" colspan="2">Tarif B</th><th class="c" colspan="2">Tarif C</th><th class="c">Jumlah</th><th class="c" style="white-space:nowrap;width:140px">Jumlah (Rp)</th></tr>
+      <tr><th></th><th></th><th class="c">(Rp)</th><th class="c">Pengunjung</th><th class="c">(Rp)</th><th class="c">Pengunjung</th><th class="c">(Rp)</th><th class="c">Pengunjung</th><th></th><th></th></tr>
     </thead>
     <tbody>
-      <?php foreach ($tiketRows as $r): $pref=$r['seri_prefix']??''; $sa=$r['seri_awal']??null; $se=$r['seri_akhir']??null; $lbr=$r['qa']+$r['qb']+$r['qc']; ?>
+      <?php foreach ($tiketRows as $r): $lbr=$r['qa']+$r['qb']+$r['qc']; ?>
       <tr>
-        <td></td><td><?= e($r['nama']) ?></td><td class="c"><?= e($r['warna']) ?></td>
-        <td class="c"><?= $sa ? e($pref . str_pad((string)$sa,4,'0',STR_PAD_LEFT)) : '-' ?></td><td class="c"><?= $se ? e($pref . str_pad((string)$se,4,'0',STR_PAD_LEFT)) : '-' ?></td>
+        <td></td><td><?= e($r['nama']) ?></td>
         <td class="r"><?= e($n($r['ta'])) ?></td><td class="r"><?= e($n($r['qa'])) ?></td>
         <td class="r"><?= e($n($r['tb'])) ?></td><td class="r"><?= e($n($r['qb'])) ?></td>
         <td class="r"><?= e($n($r['tc'])) ?></td><td class="r"><?= e($n($r['qc'])) ?></td>
@@ -192,8 +208,8 @@ $judulLap = ['harian' => 'HARIAN', 'mingguan' => 'MINGGUAN', 'bulanan' => 'BULAN
         <td class="r b"><?= e($n($r['jml'])) ?></td>
       </tr>
       <?php endforeach; ?>
-      <tr class="sec-bop"><td colspan="11">Total Penerimaan dari Tiket</td><td></td><td class="r b"><?= e($n($totTiket)) ?></td></tr>
-      <tr class="sec-bop"><td colspan="11">Jumlah Tiket Keluar</td><td class="r b"><?= e($n($totLbr)) ?></td><td></td></tr>
+      <tr class="sec-bop"><td colspan="8">Total Penerimaan dari Tiket</td><td></td><td class="r b"><?= e($n($totTiket)) ?></td></tr>
+      <tr class="sec-bop"><td colspan="8">Jumlah Tiket Keluar</td><td class="r b"><?= e($n($totLbr)) ?></td><td></td></tr>
     </tbody>
   </table>
   <table>
@@ -260,6 +276,7 @@ $judulLap = ['harian' => 'HARIAN', 'mingguan' => 'MINGGUAN', 'bulanan' => 'BULAN
       <tr class="sec"><td></td><td>Total Cashbon</td><td class="r b"><?= e($n($cashbon)) ?></td></tr>
       <tr><td></td><td>Setoran Uang Tunai</td><td></td><td class="r"><?= e($n($L['setoran'][2]['jumlah'])) ?></td></tr>
       <tr class="sec"><td></td><td>Jumlah Setoran ke YAB</td><td></td><td class="r b"><?= e($n($keYab)) ?></td></tr>
+      <tr class="sec"><td></td><td>Jumlah Setoran - BOP</td><td></td><td class="r b"><?= e($n($keYab - $totBiaya)) ?></td></tr>
     </tbody>
   </table>
   <table>
@@ -271,17 +288,19 @@ $judulLap = ['harian' => 'HARIAN', 'mingguan' => 'MINGGUAN', 'bulanan' => 'BULAN
     </tbody>
   </table>
 
-  <div class="mt-2"><b>Keterangan :</b>
-    <?php foreach ($L['keterangan'] as $k): ?><div>- <?= e($k) ?></div><?php endforeach; ?>
+  <div class="mt-3" style="margin-top:40px">
+    <b>Keterangan :</b>
+    <?php foreach ($L['keterangan'] as $k): ?><div style="margin-left:20px;font-size:10px">- <?= e($k) ?></div><?php endforeach; ?>
   </div>
 
-  <table style="margin-top:18px;border:0">
+  <table style="margin-top:48px;border:0;width:100%">
     <tbody>
       <tr>
         <?php $wTtd = $L['ttd'] ? (100 / count($L['ttd'])) : 33; foreach ($L['ttd'] as $t): ?>
-        <td class="c" style="border:0;width:<?= $wTtd ?>%">
-          <div style="height:64px"></div>
-          <b><u><?= e($t['nama']) ?></u></b><br><?= e($t['jabatan']) ?>
+        <td class="c" style="border:0;width:<?= $wTtd ?>%;padding:0;vertical-align:top">
+          <div style="height:72px"></div>
+          <div style="border-top:1px solid #333;padding-top:4px;font-size:10px;font-weight:700"><?= e($t['nama']) ?></div>
+          <div style="font-size:9px"><?= e($t['jabatan']) ?></div>
         </td>
         <?php endforeach; ?>
       </tr>

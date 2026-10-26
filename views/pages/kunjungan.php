@@ -1,4 +1,11 @@
-<?php $d=$DATA; $type=$TYPE; $period=$PERIOD; ?>
+<?php
+$d=$DATA; $type=$TYPE; $period=$PERIOD;
+// Mingguan konsisten 4 minggu per bulan: 1-7, 8-14, 15-21, 22-akhir bulan.
+$kunMonth = (int)($period['month'] ?? date('n'));
+$kunYear = (int)($period['year'] ?? date('Y'));
+$kunWeek = (int)($period['week'] ?? current_week_of_month());
+$kunLastDay = (int)date('t', mktime(0,0,0,$kunMonth,1,$kunYear));
+?>
 <div class="kasir-hero p-3 p-md-4 mb-3 d-flex flex-wrap align-items-center gap-3 position-relative no-print" style="z-index:1">
   <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1">
     <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-white" style="width:48px;height:48px;color:#0ea5e9;box-shadow:0 4px 12px rgba(0,0,0,.12)"><i class="bi bi-people fs-4"></i></span>
@@ -31,9 +38,16 @@
         <input type="date" name="tgl_akhir" class="form-control form-control-sm" style="max-width:160px" value="<?= e($period['tgl_akhir'] ?? $END) ?>">
       </span>
       <span id="kMingguan" class="<?= $type==='mingguan'?'d-flex':'d-none' ?> align-items-center gap-1">
-        <input type="number" name="minggu" min="1" max="53" class="form-control form-control-sm" style="max-width:90px" value="<?= e($period['week'] ?? date('W')) ?>">
+        <select name="bulan" class="form-select form-select-sm" style="max-width:130px">
+          <?php for($b=1;$b<=12;$b++): ?><option value="<?= $b ?>" <?= $b==$kunMonth?'selected':'' ?>><?= bulan_indo($b) ?></option><?php endfor; ?>
+        </select>
+        <select name="minggu" class="form-select form-select-sm" style="max-width:170px">
+          <?php for($w=1;$w<=4;$w++): $awal=($w-1)*7+1; $akhir=$w===4?$kunLastDay:$awal+6; ?>
+          <option value="<?= $w ?>" <?= $w===$kunWeek?'selected':'' ?>>Minggu <?= $w ?> (<?= $awal ?>-<?= $akhir ?>)</option>
+          <?php endfor; ?>
+        </select>
         <select name="tahun" class="form-select form-select-sm" style="max-width:100px">
-          <?php for($t=2024;$t<=2027;$t++): ?><option value="<?= $t ?>" <?= $t==($period['year']??date('Y'))?'selected':'' ?>><?= $t ?></option><?php endfor; ?>
+          <?php for($t=2024;$t<=2027;$t++): ?><option value="<?= $t ?>" <?= $t==$kunYear?'selected':'' ?>><?= $t ?></option><?php endfor; ?>
         </select>
       </span>
       <span id="kBulanan" class="<?= $type==='bulanan'?'d-flex':'d-none' ?> align-items-center gap-1">
