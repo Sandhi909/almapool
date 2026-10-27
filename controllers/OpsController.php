@@ -278,55 +278,45 @@ class LaporanController
 
     private function shape(array $rep, array $set, string $periode): array
 {
-        try {
-            $tiket = [];
-            foreach ($rep['tickets'] ?? [] as $t) {
-                $pengunjung = (float)($t['qa'] ?? 0) + (float)($t['qb'] ?? 0) + (float)($t['qc'] ?? 0);
-                $tiket[] = ['nama' => $t['name'], 'warna' => $t['color'],
-                    'ta' => (float) $t['la'], 'tb' => (float) $t['lb'], 'tc' => (float) $t['lc'],
-                    'qa' => (float) ($t['qa'] ?? 0), 'qb' => (float) ($t['qb'] ?? 0), 'qc' => (float) ($t['qc'] ?? 0),
-                    'pengunjung' => $pengunjung,
-                    'subtotal' => (float) $t['subtotal'],
-                    'seri_prefix' => $t['seri_prefix'] ?? '', 'seri_awal' => $t['seri_awal'] ?? null, 'seri_akhir' => $t['seri_akhir'] ?? null];
-            }
-            $member = [];
-            foreach ($rep['members'] ?? [] as $m) {
-                $jml = (float)($m['jg'] ?? 0) + (float)($m['js'] ?? 0);
-                $member[] = ['jenis' => $m['jenis'], 'qg' => (float) $m['qg'], 'qs' => (float) $m['qs'], 
-                    'tg' => 0, 'ts' => 0, 'jg' => (float)($m['jg'] ?? 0), 'js' => (float)($m['js'] ?? 0), 'jml' => $jml];
-            }
-            $les = [];
-            foreach ($rep['les'] ?? [] as $l) {
-                $jml = (float)($l['jpra'] ?? 0) + (float)($l['jpri'] ?? 0);
-                $les[] = ['jenis' => 'Les ' . $l['jenis'], 'tarif' => (float)($l['tarif'] ?? 0),
-                    'qputra' => (float) $l['qputra'], 'qputri' => (float) $l['qputri'],
-                    'jpra' => (float)($l['jpra'] ?? 0), 'jpri' => (float)($l['jpri'] ?? 0), 'jml' => $jml];
-            }
-            $biaya = array_map(fn ($b) => ['nama' => $b['nama'], 'jumlah' => (float) $b['jumlah']], $rep['biaya'] ?? []);
-            $pay = $rep['trxPay'] ?? ['TUNAI' => 0, 'QRIS' => 0, 'TRANSFER' => 0];
-            return [
-                'periode' => $periode,
-                'tambahan' => (float) $rep['tambahan'],
-                'saldo_awal' => ['bon' => (float) ($set['saldo_awal_bon'] ?? 0), 'tunai' => (float) ($set['saldo_awal_tunai'] ?? 0)],
-                'tiket' => $tiket, 'member' => $member, 'sewa_alat' => (float) $rep['sewa'], 'les' => $les,
-                'biaya' => $biaya,
-                'setoran' => [
-                    ['nama' => 'QRIS', 'jumlah' => (float) ($pay['QRIS'] ?? 0)],
-                    ['nama' => 'Transfer Rekening Mandiri Yayasan', 'jumlah' => (float) ($pay['TRANSFER'] ?? 0)],
-                    ['nama' => 'Setoran Uang', 'jumlah' => (float) ($pay['TUNAI'] ?? 0)],
-                ],
-                'saldo_akhir' => ['bon' => null, 'tunai' => null],
-                'keterangan' => ['Tarif A : Senin s.d Sabtu', 'Tarif B : Minggu & Libur Nasional', 'Tarif C : Idul Fitri'],
-                'ttd' => [
-                    ['nama' => $set['ttd_admin'] ?? '-', 'jabatan' => $set['ttd_admin_jabatan'] ?? 'Administrasi Kolam'],
-                    ['nama' => $set['ttd_manajer'] ?? '-', 'jabatan' => $set['ttd_manajer_jabatan'] ?? 'Manajer Kolam'],
-                    ['nama' => $set['ttd_kepala'] ?? '-', 'jabatan' => $set['ttd_kepala_jabatan'] ?? 'Kepala Direktorat Pengelola Unit Bisnis'],
-                ],
-            ];
-        } catch (Exception $e) {
-            error_log('shape() error: ' . $e->getMessage() . ' Rep: ' . json_encode($rep));
-            return ['periode' => $periode, 'tiket' => [], 'member' => [], 'les' => [], 'biaya' => [], 'setoran' => [], 'ttd' => [], 'keterangan' => ['Error: ' . $e->getMessage()]];
+        $tiket = [];
+        foreach ($rep['tickets'] as $t) {
+            $tiket[] = ['nama' => $t['name'], 'warna' => $t['color'],
+                'la' => (float) $t['la'], 'lb' => (float) $t['lb'], 'lc' => (float) $t['lc'],
+                'qa' => (float) ($t['qa'] ?? 0), 'qb' => (float) ($t['qb'] ?? 0), 'qc' => (float) ($t['qc'] ?? 0),
+                'subtotal' => (float) $t['subtotal'],
+                'seri_prefix' => $t['seri_prefix'] ?? '', 'seri_awal' => $t['seri_awal'] ?? null, 'seri_akhir' => $t['seri_akhir'] ?? null];
         }
+        $member = [];
+        foreach ($rep['members'] as $m) {
+            $member[] = ['jenis' => $m['jenis'], 'qg' => (float) $m['qg'], 'qs' => (float) $m['qs']];
+        }
+        $les = [];
+        foreach ($rep['les'] as $l) {
+            $les[] = ['jenis' => 'Les ' . $l['jenis'], 'qputra' => (float) $l['qputra'], 'qputri' => (float) $l['qputri']];
+        }
+        $biaya = array_map(fn ($b) => ['nama' => $b['nama'], 'jumlah' => (float) $b['jumlah']], $rep['biaya']);
+        // Setoran OTOMATIS dari transaksi (bukan input manual deposits):
+        // QRIS & TRANSFER langsung ke rekening yayasan, TUNAI = setoran uang.
+        $pay = $rep['trxPay'] ?? ['TUNAI' => 0, 'QRIS' => 0, 'TRANSFER' => 0];
+        return [
+            'periode' => $periode,
+            'tambahan' => (float) $rep['tambahan'],
+            'saldo_awal' => ['bon' => (float) ($set['saldo_awal_bon'] ?? 0), 'tunai' => (float) ($set['saldo_awal_tunai'] ?? 0)],
+            'tiket' => $tiket, 'member' => $member, 'sewa_alat' => (float) $rep['sewa'], 'les' => $les,
+            'biaya' => $biaya,
+            'setoran' => [
+                ['nama' => 'QRIS', 'jumlah' => (float) ($pay['QRIS'] ?? 0)],
+                ['nama' => 'Transfer Rekening Mandiri Yayasan', 'jumlah' => (float) ($pay['TRANSFER'] ?? 0)],
+                ['nama' => 'Setoran Uang', 'jumlah' => (float) ($pay['TUNAI'] ?? 0)],
+            ],
+            'saldo_akhir' => ['bon' => null, 'tunai' => null],
+            'keterangan' => ['Tarif A : Senin s.d Sabtu', 'Tarif B : Minggu & Libur Nasional', 'Tarif C : Idul Fitri'],
+            'ttd' => [
+                ['nama' => $set['ttd_admin'] ?? '-', 'jabatan' => $set['ttd_admin_jabatan'] ?? 'Administrasi Kolam'],
+                ['nama' => $set['ttd_manajer'] ?? '-', 'jabatan' => $set['ttd_manajer_jabatan'] ?? 'Manajer Kolam'],
+                ['nama' => $set['ttd_kepala'] ?? '-', 'jabatan' => $set['ttd_kepala_jabatan'] ?? 'Kepala Direktorat Pengelola Unit Bisnis'],
+            ],
+        ];
     }
 }
 
