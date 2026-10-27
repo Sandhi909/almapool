@@ -66,7 +66,7 @@ $totPenerimaan = $totTiket + $totMember + $totSewaLes + $tambahan;
 $totBiaya = array_sum(array_column($L['biaya'], 'jumlah'));
 $bersih = $totPenerimaan - $totBiaya;
 $cashbon = $L['setoran'][0]['jumlah'] + $L['setoran'][1]['jumlah'];
-$keYab = $cashbon + $L['setoran'][2]['jumlah'];
+$keYab = $cashbon + ($L['setoran'][2]['jumlah'] - $totBiaya);
 ?>
 <style>
 .lap-wrap{font-family:Arial,Helvetica,sans-serif;font-size:11.5px;color:#111;background:#fff}
