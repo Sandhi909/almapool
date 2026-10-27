@@ -1,6 +1,7 @@
 <?php
 // Laporan Bulanan — replika format dokumen Kolam Renang Al Ma'soem.
 // Seluruh angka dihitung dari $LAPORAN (dummy) + tarif master.
+if (!function_exists('e')) require_once __DIR__ . '/../../helpers.php';
 $L = $LAPORAN;
 $n = function ($v): string {
     if ($v === null || $v === '' || (float) $v == 0) return '-';
