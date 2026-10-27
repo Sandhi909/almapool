@@ -280,19 +280,26 @@ class LaporanController
 {
         $tiket = [];
         foreach ($rep['tickets'] as $t) {
+            $pengunjung = (float)($t['qa'] ?? 0) + (float)($t['qb'] ?? 0) + (float)($t['qc'] ?? 0);
             $tiket[] = ['nama' => $t['name'], 'warna' => $t['color'],
-                'la' => (float) $t['la'], 'lb' => (float) $t['lb'], 'lc' => (float) $t['lc'],
+                'ta' => (float) $t['la'], 'tb' => (float) $t['lb'], 'tc' => (float) $t['lc'],
                 'qa' => (float) ($t['qa'] ?? 0), 'qb' => (float) ($t['qb'] ?? 0), 'qc' => (float) ($t['qc'] ?? 0),
+                'pengunjung' => $pengunjung,
                 'subtotal' => (float) $t['subtotal'],
                 'seri_prefix' => $t['seri_prefix'] ?? '', 'seri_awal' => $t['seri_awal'] ?? null, 'seri_akhir' => $t['seri_akhir'] ?? null];
         }
         $member = [];
         foreach ($rep['members'] as $m) {
-            $member[] = ['jenis' => $m['jenis'], 'qg' => (float) $m['qg'], 'qs' => (float) $m['qs']];
+            $jml = (float)($m['jg'] ?? 0) + (float)($m['js'] ?? 0);
+            $member[] = ['jenis' => $m['jenis'], 'qg' => (float) $m['qg'], 'qs' => (float) $m['qs'], 
+                'tg' => 0, 'ts' => 0, 'jg' => (float)($m['jg'] ?? 0), 'js' => (float)($m['js'] ?? 0), 'jml' => $jml];
         }
         $les = [];
         foreach ($rep['les'] as $l) {
-            $les[] = ['jenis' => 'Les ' . $l['jenis'], 'qputra' => (float) $l['qputra'], 'qputri' => (float) $l['qputri']];
+            $jml = (float)($l['jpra'] ?? 0) + (float)($l['jpri'] ?? 0);
+            $les[] = ['jenis' => 'Les ' . $l['jenis'], 'tarif' => (float)($l['tarif'] ?? 0),
+                'qputra' => (float) $l['qputra'], 'qputri' => (float) $l['qputri'],
+                'jpra' => (float)($l['jpra'] ?? 0), 'jpri' => (float)($l['jpri'] ?? 0), 'jml' => $jml];
         }
         $biaya = array_map(fn ($b) => ['nama' => $b['nama'], 'jumlah' => (float) $b['jumlah']], $rep['biaya']);
         // Setoran OTOMATIS dari transaksi (bukan input manual deposits):
