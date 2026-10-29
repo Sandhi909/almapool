@@ -13,23 +13,58 @@
 </div>
 
 <style>
+/* Print header yang hanya muncul saat cetak */
+.print-header { display: none; }
 @media print {
-  .no-print, .page-hero, .tt-card.mb-3:first-of-type, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav { display: none !important; }
-  body { margin: 0; padding: 0; background: #fff; }
-  .tt-main { padding: 0; }
+  .no-print, .page-hero, .tt-card.mb-3:first-of-type, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav, .btn-group { display: none !important; }
+  body { margin: 0; padding: 0; background: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  .tt-main { padding: 0 !important; }
+  
+  /* Print header */
+  .print-header { display: block !important; text-align: center; margin-bottom: 12px; border-bottom: 2px solid #1a1a2e; padding-bottom: 8px; }
+  .print-header h1 { margin: 0; font-size: 16px; font-weight: 700; color: #1a1a2e; letter-spacing: 1px; }
+  .print-header .subtitle { font-size: 11px; color: #444; margin-top: 2px; font-weight: 500; }
+  .print-header .periode { font-size: 10px; color: #666; margin-top: 1px; }
+  .print-header .logo { height: 40px; margin-bottom: 4px; }
+  
   .tt-card { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
-  .row.g-3.mb-3 { margin: 0 !important; }
-  .col-6, .col-xl { padding: 0 !important; margin-bottom: 8px !important; page-break-inside: avoid; }
-  .metric-label { font-size: 9px !important; color: #333 !important; }
+  .row.g-3.mb-3 { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; margin: 0 0 12px 0 !important; }
+  .col-6, .col-xl { padding: 0 !important; margin-bottom: 0 !important; page-break-inside: avoid; }
+  .metric-label { font-size: 8.5px !important; color: #333 !important; text-transform: uppercase; letter-spacing: 0.3px; }
   .metric-value { font-size: 13px !important; }
+  .tt-card .metric-label { margin-bottom: 2px; }
+  .tt-card .metric-value { font-weight: 700; font-variant-numeric: tabular-nums; font-family: 'Segoe UI', monospace; }
+  
   .table-responsive { overflow: visible !important; }
-  table { font-size: 9px !important; width: 100% !important; border-collapse: collapse !important; }
-  th, td { border: 1px solid #000 !important; padding: 3px 4px !important; }
-  thead th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .pill { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  @page { margin: 10mm; size: A4; }
+  table { font-size: 9px !important; width: 100% !important; border-collapse: collapse !important; margin-top: 8px !important; }
+  th, td { border: 1px solid #000 !important; padding: 3px 4px !important; vertical-align: middle !important; }
+  thead th { background: #1a1a2e !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 700; font-size: 8.5px !important; text-align: center; }
+  tbody tr:nth-child(even) { background: #f9f9f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pill { border: 1px solid #666 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 8px !important; padding: 1px 4px !important; border-radius: 999px; display: inline-block; }
+  
+  /* footer info */
+  .print-footer { display: block !important; margin-top: 15px; text-align: center; font-size: 8.5px; color: #666; border-top: 1px solid #ccc; padding-top: 8px; }
+  
+  @page { margin: 12mm 10mm; size: A4; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
+
+<!-- Print header (only visible when printing) -->
+<div class="print-header">
+  <img src="<?= url(APP_LOGO) ?>" alt="Logo" class="logo">
+  <h1><?= e(defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem') ?></h1>
+  <div class="subtitle">LAPORAN TRANSAKSI HARIAN</div>
+  <div class="periode"><?= e(hari_tanggal_indo($filter['date'] ?: date('Y-m-d'))) ?></div>
+</div>
+
+<!-- Print header (only visible when printing) -->
+<div class="print-header">
+  <img src="<?= url(APP_LOGO) ?>" alt="Logo" class="logo">
+  <h1><?= e(defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem') ?></h1>
+  <div class="subtitle">LAPORAN TRANSAKSI HARIAN</div>
+  <div class="periode"><?= e(hari_tanggal_indo($filter['date'] ?: date('Y-m-d'))) ?></div>
+</div>
 
 <div class="row g-3 mb-3">
   <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transaksi (<?= e($filter['date'] ?: 'semua') ?>)</span>
@@ -125,6 +160,11 @@
   </div>
 </div>
 
+
+<!-- Print footer -->
+<div class="print-footer">
+  Dicetak pada: <?= hari_tanggal_indo() ?> <?= date('H:i') ?> WIB | Sistem Kolam Renang Al Ma'soem
+</div>
 
 <?php foreach ($TRANSAKSI as $tr): if($tr['payment_status']!=='PAID' || $tr['type']!=='TIKET' || (time()-strtotime($tr['created_at'])>=24*3600)) continue; ?>
 <div class="modal fade" id="refundModal<?= (int)$tr['id'] ?>" tabindex="-1" aria-hidden="true">
