@@ -58,14 +58,6 @@
   <div class="periode"><?= e(hari_tanggal_indo($filter['date'] ?: date('Y-m-d'))) ?></div>
 </div>
 
-<!-- Print header (only visible when printing) -->
-<div class="print-header">
-  <img src="<?= url(APP_LOGO) ?>" alt="Logo" class="logo">
-  <h1><?= e(defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem') ?></h1>
-  <div class="subtitle">LAPORAN TRANSAKSI HARIAN</div>
-  <div class="periode"><?= e(hari_tanggal_indo($filter['date'] ?: date('Y-m-d'))) ?></div>
-</div>
-
 <div class="row g-3 mb-3">
   <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transaksi (<?= e($filter['date'] ?: 'semua') ?>)</span>
     <div class="metric-value num"><?= $sumHari['count'] ?></div></div></div>
