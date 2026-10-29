@@ -192,7 +192,7 @@
 </div>
 <?php endforeach; ?>
 
-<div class="row g-3">
+<div class="row g-3 no-print">
   <div class="col-xl-6">
     <div class="tt-card h-100">
       <div class="d-flex align-items-center gap-2 mb-2">
