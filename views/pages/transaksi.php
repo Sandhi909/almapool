@@ -16,7 +16,7 @@
 /* Print header yang hanya muncul saat cetak */
 .print-header { display: none; }
 @media print {
-  .no-print, .page-hero, .tt-card.mb-3:first-of-type, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav, .btn-group { display: none !important; }
+  .no-print, .page-hero, .tt-card.mb-3:first-of-type, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav, .btn-group, .tt-topbar, .tt-sidebar, .tt-breadcrumb { display: none !important; }
   body { margin: 0; padding: 0; background: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
   .tt-main { padding: 0 !important; }
   
