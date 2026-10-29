@@ -87,7 +87,6 @@ class Transaction extends Model
         } elseif (in_array($method, ['TUNAI', 'TAGIHAN', 'QRIS', 'TRANSFER'], true)) {
             $out[$method] = $total;
         } else {
-        } else {
             $out['TUNAI'] = $total;
         }
         return $out;
