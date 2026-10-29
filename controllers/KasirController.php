@@ -61,12 +61,12 @@ class KasirController
         $tarif = in_array($in['tarif'] ?? '', ['A', 'B', 'C'], true) ? $in['tarif'] : 'A';
         $kelas = ($in['kelas'] ?? '') === 'Silver' ? 'SILVER' : 'GOLD';
         $areaGlobal = in_array($in['area'] ?? '', ['PUTRA', 'PUTRI', 'CAMPURAN'], true) ? $in['area'] : 'PUTRA';
-        $paySingle = in_array($in['payment'] ?? '', ['TUNAI', 'QRIS', 'TRANSFER'], true) ? $in['payment'] : 'TUNAI';
+        $paySingle = in_array($in['payment'] ?? '', ['TUNAI', 'TAGIHAN', 'QRIS', 'TRANSFER'], true) ? $in['payment'] : 'TUNAI';
         // Pembayaran gabungan (split): {TUNAI:x, QRIS:y, TRANSFER:z}. Jika tidak dikirim, pakai jalur tunggal lama.
         $paySplit = null;
         if (isset($in['payments']) && is_array($in['payments'])) {
             $paySplit = [];
-            foreach (['TUNAI', 'QRIS', 'TRANSFER'] as $m) {
+            foreach (['TUNAI', 'TAGIHAN', 'QRIS', 'TRANSFER'] as $m) {
                 $paySplit[$m] = max(0, round((float) ($in['payments'][$m] ?? 0), 2));
             }
         }

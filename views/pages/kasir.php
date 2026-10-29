@@ -302,6 +302,7 @@ $settings = $settings ?? [];
       <b class="small">Metode Pembayaran</b>
       <div class="row g-2 my-2">
         <div class="col-3"><div class="pay-opt active" data-pay="TUNAI"><i class="bi bi-cash-stack fs-4 d-block"></i><b style="font-size:.8rem">Tunai</b></div></div>
+        <div class="col-3"><div class="pay-opt" data-pay="TAGIHAN"><i class="bi bi-receipt fs-4 d-block"></i><b style="font-size:.8rem">Tagihan</b></div></div>
         <div class="col-3"><div class="pay-opt" data-pay="QRIS"><i class="bi bi-qr-code fs-4 d-block"></i><b style="font-size:.8rem">QRIS</b></div></div>
         <div class="col-3"><div class="pay-opt" data-pay="TRANSFER"><i class="bi bi-bank fs-4 d-block"></i><b style="font-size:.8rem">Transfer</b></div></div>
         <div class="col-3"><div class="pay-opt" data-pay="GABUNGAN"><i class="bi bi-pie-chart fs-4 d-block"></i><b style="font-size:.8rem">Gabungan</b></div></div>

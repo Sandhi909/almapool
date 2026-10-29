@@ -86,7 +86,7 @@
       <?php endforeach; ?></select></div>
     <div class="col-md-3"><label class="form-label small fw-semibold">Metode</label><select class="form-select" name="metode">
       <option value="">Semua</option>
-      <?php foreach (['TUNAI','QRIS','TRANSFER','GABUNGAN'] as $j): ?>
+      <?php foreach (['TUNAI','TAGIHAN','QRIS','TRANSFER','GABUNGAN'] as $j): ?>
       <option value="<?= $j ?>" <?= $filter['method'] === $j ? 'selected' : '' ?>><?= e(ucfirst(strtolower($j))) ?></option>
       <?php endforeach; ?></select></div>
     <div class="col-md-3"><label class="form-label small fw-semibold">Cari</label><div class="input-group">
@@ -120,7 +120,7 @@
           <td><span class="pill <?= $tr['area']==='PUTRI'?'pill-amber':($tr['area']==='CAMPURAN'?'pill-green':'pill-blue') ?>"><?= e($tr['area']==='CAMPURAN'?'Putra dan Putri':ucfirst(strtolower($tr['area']))) ?></span></td>
           <td><?= e($tr['kasir'] ?: '-') ?></td>
           <td class="text-end num fw-bold"><?= rupiah($tr['amount']) ?></td>
-          <td><span class="pill <?= $tr['payment_method'] === 'TUNAI' ? 'pill-grey' : 'pill-green' ?>" title="<?= e(Transaction::payLabel($tr)) ?>"><?= e($tr['payment_method']) ?></span><?php if (($tr['payment_method'] ?? '') === 'GABUNGAN'): ?><br><small class="text-muted" style="font-size:.65rem"><?= e(Transaction::payLabel($tr)) ?></small><?php endif; ?></td>
+          <td><span class="pill <?= $tr['payment_method'] === 'TUNAI' || $tr['payment_method'] === 'TAGIHAN' ? 'pill-grey' : 'pill-green' ?>" title="<?= e(Transaction::payLabel($tr)) ?>"><?= e($tr['payment_method'] === 'TAGIHAN' ? 'TAGIHAN' : $tr['payment_method']) ?></span><?php if (($tr['payment_method'] ?? '') === 'GABUNGAN'): ?><br><small class="text-muted" style="font-size:.65rem"><?= e(Transaction::payLabel($tr)) ?></small><?php endif; ?></td>
           <td><span class="pill <?= $isCancelled?'pill-red':'pill-green' ?>"><span class="dot"></span><?= e($tr['payment_status']) ?></span><?php if($isCancelled && str_contains($tr['notes']??'','REFUND')): ?><?php
           // Extract refund reason from notes
           $refundReason = '';

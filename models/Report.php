@@ -92,7 +92,7 @@ class Report extends Model
         // Split-aware: transaksi GABUNGAN dipecah ke tiap kolom metodenya.
         $pay = $this->queryOne(
             "SELECT
-                COALESCE(SUM(CASE WHEN payment_method = 'TUNAI' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_tunai ELSE 0 END),0) tunai,
+                COALESCE(SUM(CASE WHEN payment_method IN ('TUNAI','TAGIHAN') THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_tunai ELSE 0 END),0) tunai,
                 COALESCE(SUM(CASE WHEN payment_method = 'QRIS' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_qris ELSE 0 END),0) qris,
                 COALESCE(SUM(CASE WHEN payment_method = 'TRANSFER' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_transfer ELSE 0 END),0) transfer
               FROM transactions WHERE $txnWhere AND payment_status = 'PAID'", $txnParams);

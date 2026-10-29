@@ -83,8 +83,8 @@ class Transaction extends Model
             foreach (['TUNAI', 'QRIS', 'TRANSFER'] as $m) {
                 $out[$m] = max(0, round((float) ($pay[$m] ?? 0), 2));
             }
-        } elseif (in_array($method, ['TUNAI', 'QRIS', 'TRANSFER'], true)) {
-            $out[$method] = $total;
+        } elseif (in_array($method, ['TUNAI', 'TAGIHAN', 'QRIS', 'TRANSFER'], true)) {
+            $out[$method === 'TAGIHAN' ? 'TUNAI' : $method] = $total;
         } else {
             $out['TUNAI'] = $total;
         }
@@ -95,7 +95,8 @@ class Transaction extends Model
     public static function payLabel(array $trx): string
     {
         if (($trx['payment_method'] ?? '') !== 'GABUNGAN') {
-            return (string) ($trx['payment_method'] ?? '-');
+            $pm = (string) ($trx['payment_method'] ?? '-');
+            return $pm === 'TAGIHAN' ? 'Tagihan' : $pm;
         }
         $parts = [];
         foreach ([['TUNAI', 'Tunai'], ['QRIS', 'QRIS'], ['TRANSFER', 'Transfer']] as [$k, $lbl]) {
@@ -134,7 +135,7 @@ class Transaction extends Model
         // Split-aware: transaksi GABUNGAN dipecah ke tiap kolom metodenya.
         $m = $this->queryOne(
             "SELECT
-                COALESCE(SUM(CASE WHEN payment_method = 'TUNAI' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_tunai ELSE 0 END),0) tunai,
+                COALESCE(SUM(CASE WHEN payment_method IN ('TUNAI','TAGIHAN') THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_tunai ELSE 0 END),0) tunai,
                 COALESCE(SUM(CASE WHEN payment_method = 'QRIS' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_qris ELSE 0 END),0) qris,
                 COALESCE(SUM(CASE WHEN payment_method = 'TRANSFER' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_transfer ELSE 0 END),0) transfer
               FROM transactions WHERE DATE(created_at) = ? AND payment_status = 'PAID'", [$date]);
