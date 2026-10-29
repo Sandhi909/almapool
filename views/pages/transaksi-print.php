@@ -114,7 +114,6 @@ $APP_NAME = defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem';
   <div class="sum-card"><div class="label">Tunai</div><div class="value cash"><?= rupiah($sum['by']['TUNAI']) ?></div></div>
   <div class="sum-card"><div class="label">QRIS</div><div class="value digital"><?= rupiah($sum['by']['QRIS']) ?></div></div>
   <div class="sum-card"><div class="label">Transfer</div><div class="value digital"><?= rupiah($sum['by']['TRANSFER']) ?></div></div>
-  <div class="sum-card"><div class="label">Gabungan</div><div class="value"><?= rupiah($sum['by']['GABUNGAN'] ?? 0) ?></div></div>
   <div class="sum-card"><div class="label">Total Biaya Operasional</div><div class="value expense"><?= rupiah($biayaHarian) ?></div></div>
   <div class="sum-card"><div class="label">Tunai Bersih (Tunai - Biaya)</div><div class="value net <?= $tunaiBersih < 0 ? 'neg' : '' ?>"><?= rupiah($tunaiBersih) ?></div></div>
 </div>
@@ -186,10 +185,6 @@ $APP_NAME = defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem';
 
 <div class="footer">
   <div>Dicetak pada: <?= hari_tanggal_indo() ?> <?= date('H:i') ?> WIB</div>
-  <div style="margin-top: 20px;">
-    <span class="sig-line">Disetujui</span>
-    <span class="sig-line">Dibuat Oleh</span>
-  </div>
   <div style="margin-top: 5px; font-size: 7.5px; color: #999;">Sistem Kolam Renang Al Ma'soem</div>
 </div>
 
