@@ -37,6 +37,10 @@ if ($page === 'scan' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     (new ScanController())->checkin();
     exit;
 }
+if ($page === 'transaksi-print') {
+    require_once __DIR__ . '/views/pages/transaksi-print.php';
+    exit;
+}
 
 /* ---------- halaman ---------- */
 $routes = [

@@ -1,17 +1,8 @@
 <?php
-// Print view for transaksi harian - dipanggil via window.open dari transaksi.php
-require_once __DIR__ . '/../../helpers.php';
-require_once __DIR__ . '/../../config.php';
-require_once __DIR__ . '/../../database/db.php';
-require_once __DIR__ . '/../../core/Model.php';
-foreach (glob(__DIR__ . '/../../models/*.php') as $f) require_once $f;
-foreach (glob(__DIR__ . '/../../controllers/*.php') as $f) require_once $f;
-
+// Print view for transaksi harian - standalone page via index.php?page=transaksi-print
 $filter = ['date' => get_param('tgl', date('Y-m-d')), 'type' => get_param('jenis', ''),
     'method' => get_param('metode', ''), 'q' => get_param('q', '')];
 
-$rep = new Report();
-$repData = $rep->daily($filter['date']);
 $sum = (new Transaction())->todaySummary($filter['date']);
 $biayaHarian = (new OpCost())->totalDaily($filter['date']);
 $tunaiBersih = $sum['by']['TUNAI'] - $biayaHarian;
