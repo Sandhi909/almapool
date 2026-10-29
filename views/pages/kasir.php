@@ -310,6 +310,7 @@ $settings = $settings ?? [];
       <div id="splitBox" class="rounded-4 p-3 mb-2 d-none" style="background:#f0fdfa;border:1.5px dashed #6ee7b7">
         <b class="small"><i class="bi bi-pie-chart me-1"></i>Rincian Gabungan <small class="text-muted fw-normal">— jumlah harus pas total</small></b>
         <div class="input-group input-group-sm mt-2 mb-2"><span class="input-group-text bg-white" style="min-width:86px">Tunai</span><span class="input-group-text bg-white">Rp</span><input class="form-control num split-input" id="splitTunai" inputmode="numeric" placeholder="0"></div>
+        <div class="input-group input-group-sm mb-2"><span class="input-group-text bg-white" style="min-width:86px">Tagihan</span><span class="input-group-text bg-white">Rp</span><input class="form-control num split-input" id="splitTagihan" inputmode="numeric" placeholder="0"></div>
         <div class="input-group input-group-sm mb-2"><span class="input-group-text bg-white" style="min-width:86px">QRIS</span><span class="input-group-text bg-white">Rp</span><input class="form-control num split-input" id="splitQris" inputmode="numeric" placeholder="0"></div>
         <div class="input-group input-group-sm mb-2"><span class="input-group-text bg-white" style="min-width:86px">Transfer</span><span class="input-group-text bg-white">Rp</span><input class="form-control num split-input" id="splitTransfer" inputmode="numeric" placeholder="0"></div>
         <div class="d-flex justify-content-between align-items-center small"><span class="text-muted">Sisa</span><b class="num" id="splitSisa">Rp0</b></div>
@@ -724,6 +725,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function splitVals() {
     return {
       TUNAI: +($('splitTunai').value.replace(/[^0-9]/g, '') || 0),
+      TAGIHAN: +($('splitTagihan').value.replace(/[^0-9]/g, '') || 0),
       QRIS: +($('splitQris').value.replace(/[^0-9]/g, '') || 0),
       TRANSFER: +($('splitTransfer').value.replace(/[^0-9]/g, '') || 0)
     };
@@ -731,7 +733,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function hitungSisa() {
     const total = +($('cartTotal').dataset.value || 0);
     const s = splitVals();
-    const sisa = total - (s.TUNAI + s.QRIS + s.TRANSFER);
+    const sisa = total - (s.TUNAI + s.TAGIHAN + s.QRIS + s.TRANSFER);
     const el = $('splitSisa');
     el.textContent = (sisa === 0 ? 'Pas ' : (sisa > 0 ? 'Kurang ' : 'Lebih ')) + fmt(Math.abs(sisa));
     el.style.color = sisa === 0 ? '#15803d' : '#b91c1c';

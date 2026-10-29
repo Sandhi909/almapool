@@ -18,8 +18,7 @@ CREATE TABLE IF NOT EXISTS `operational_costs` (
   `notes` VARCHAR(255) NULL,
   `created_by` INT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`expense_type_id`) REFERENCES `expense_types`(`id`),
-  FOREIGN KEY (`created_by`) REFERENCES `users`(`id`)
+  FOREIGN KEY (`expense_type_id`) REFERENCES `expense_types`(`id`) ON DELETE CASCADE
 );
 
 -- 3. Seed default expense types

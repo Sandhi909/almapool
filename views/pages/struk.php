@@ -66,7 +66,7 @@
       <hr class="struk-divider-dashed">
       <div class="d-flex fw-bold" style="font-size:13px;font-weight:800"><span>TOTAL</span><span class="ms-auto">Rp<?= number_format($t['amount'], 0, ',', '.') ?></span></div>
       <?php if (($t['payment_method'] ?? '') === 'GABUNGAN'): ?>
-      <?php foreach ([['pay_tunai', 'Tunai'], ['pay_qris', 'QRIS'], ['pay_transfer', 'Transfer']] as [$col, $lbl]): ?>
+      <?php foreach ([['pay_tunai', 'Tunai'], ['pay_tagihan', 'Tagihan'], ['pay_qris', 'QRIS'], ['pay_transfer', 'Transfer']] as [$col, $lbl]): ?>
       <?php if ((float) ($t[$col] ?? 0) > 0): ?>
       <div class="d-flex"><span>- <?= $lbl ?></span><span class="ms-auto">Rp<?= number_format($t[$col], 0, ',', '.') ?></span></div>
       <?php endif; ?>

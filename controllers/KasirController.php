@@ -224,7 +224,7 @@ class KasirController
                 // Catatan transaksi diturunkan ulang dari item terbaru (hindari duplikasi "POS loket").
                 $stamp = ' [EDIT ' . date('Y-m-d H:i:s') . ']';
                 $editNotes = mb_substr($notesFinal, 0, max(0, 255 - mb_strlen($stamp))) . $stamp;
-                $pdo->prepare('UPDATE transactions SET type=?, member_id=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, area=?, notes=? WHERE id=?')->execute([$type,$memberId,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$areaFinal,$editNotes,$editId]);
+                $pdo->prepare('UPDATE transactions SET type=?, member_id=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, pay_tagihan=?, area=?, notes=? WHERE id=?')->execute([$type,$memberId,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$payCols['TAGIHAN'],$areaFinal,$editNotes,$editId]);
                 $pdo->commit();
             } catch(Throwable $e){ if($pdo->inTransaction()) $pdo->rollBack(); json_response(['ok'=>false,'message'=>'Gagal edit: '.$e->getMessage()],500); }
             $row = $trx->find($editId);

@@ -36,6 +36,7 @@ class Transaction extends Model
                 'pay_tunai' => $pay['TUNAI'],
                 'pay_qris' => $pay['QRIS'],
                 'pay_transfer' => $pay['TRANSFER'],
+                'pay_tagihan' => $pay['TAGIHAN'],
                 'payment_status' => 'PAID',
                 'cashier_id' => $head['cashier_id'],
                 'area' => $head['area'] ?? 'PUTRA',
@@ -78,13 +79,14 @@ class Transaction extends Model
      */
     public static function normalizePay($pay, string $method, float $total): array
     {
-        $out = ['TUNAI' => 0.0, 'QRIS' => 0.0, 'TRANSFER' => 0.0];
+        $out = ['TUNAI' => 0.0, 'QRIS' => 0.0, 'TRANSFER' => 0.0, 'TAGIHAN' => 0.0];
         if (is_array($pay)) {
-            foreach (['TUNAI', 'QRIS', 'TRANSFER'] as $m) {
+            foreach (['TUNAI', 'TAGIHAN', 'QRIS', 'TRANSFER'] as $m) {
                 $out[$m] = max(0, round((float) ($pay[$m] ?? 0), 2));
             }
         } elseif (in_array($method, ['TUNAI', 'TAGIHAN', 'QRIS', 'TRANSFER'], true)) {
-            $out[$method === 'TAGIHAN' ? 'TUNAI' : $method] = $total;
+            $out[$method] = $total;
+        } else {
         } else {
             $out['TUNAI'] = $total;
         }
@@ -135,7 +137,7 @@ class Transaction extends Model
         // Split-aware: transaksi GABUNGAN dipecah ke tiap kolom metodenya.
         $m = $this->queryOne(
             "SELECT
-                COALESCE(SUM(CASE WHEN payment_method IN ('TUNAI','TAGIHAN') THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_tunai ELSE 0 END),0) tunai,
+                COALESCE(SUM(CASE WHEN payment_method IN ('TUNAI','TAGIHAN') THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_tunai + pay_tagihan ELSE 0 END),0) tunai,
                 COALESCE(SUM(CASE WHEN payment_method = 'QRIS' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_qris ELSE 0 END),0) qris,
                 COALESCE(SUM(CASE WHEN payment_method = 'TRANSFER' THEN amount WHEN payment_method = 'GABUNGAN' THEN pay_transfer ELSE 0 END),0) transfer
               FROM transactions WHERE DATE(created_at) = ? AND payment_status = 'PAID'", [$date]);
