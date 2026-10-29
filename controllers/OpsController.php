@@ -117,12 +117,18 @@ class TransaksiController
             'UANG' => (float) ($sum['by']['TUNAI'] ?? 0)];
         $totBiayaArr = (new OpCost())->total($y, $mo);
         $totBiaya = array_sum($totBiayaArr);
+        // Daily biaya & tunai bersih untuk filter date
+        $filterDate = $filter['date'] ?: date('Y-m-d');
+        $biayaHarian = (new OpCost())->totalDaily($filterDate);
+        $tunaiBersih = $sum['by']['TUNAI'] - $biayaHarian;
         return [
             'TRANSAKSI' => (new Transaction())->listAll($filter),
             'filter' => $filter,
             'sumHari' => $sum,
             'BIAYA' => (new OpCost())->monthly($y, $mo),
             'totBiaya' => $totBiaya,
+            'biayaHarian' => $biayaHarian,
+            'tunaiBersih' => $tunaiBersih,
             'EXPENSE_TYPES' => (new MasterExpenseType())->active(),
             'SETORAN' => $setoranAuto,
             'LAPORAN' => ['periode' => date('F Y')],

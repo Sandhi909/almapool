@@ -8,6 +8,12 @@ class OpCost extends Model
             "SELECT oc.*, et.name as expense_type_name FROM operational_costs oc LEFT JOIN expense_types et ON oc.expense_type_id = et.id WHERE DATE_FORMAT(oc.cost_date,'%Y-%m') = ?
              ORDER BY oc.cost_date DESC, oc.id DESC", [sprintf('%04d-%02d', $year, $month)]);
     }
+    public function daily(string $date): array
+    {
+        return $this->query(
+            "SELECT oc.*, et.name as expense_type_name FROM operational_costs oc LEFT JOIN expense_types et ON oc.expense_type_id = et.id WHERE oc.cost_date = ?
+             ORDER BY oc.id DESC", [$date]);
+    }
     public function total(int $year, int $month): array
     {
         $rows = $this->query(
@@ -15,6 +21,12 @@ class OpCost extends Model
         $out = [];
         foreach ($rows as $r) $out[$r['expense_type_name']] = (float) $r['t'];
         return $out;
+    }
+    public function totalDaily(string $date): float
+    {
+        $row = $this->queryOne(
+            "SELECT COALESCE(SUM(amount),0) t FROM operational_costs WHERE cost_date = ?", [$date]);
+        return (float) ($row['t'] ?? 0);
     }
     public function listAll(): array
     {

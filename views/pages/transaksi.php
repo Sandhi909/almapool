@@ -23,6 +23,10 @@
     <div class="metric-value num"><?= rupiah($sumHari['by']['QRIS']) ?></div></div></div>
   <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transfer</span>
     <div class="metric-value num"><?= rupiah($sumHari['by']['TRANSFER']) ?></div></div></div>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Total Biaya (<?= e(date('d/m', strtotime($filter['date'] ?: date('Y-m-d')))) ?>)</span>
+    <div class="metric-value num" style="color:#dc3545"><?= rupiah($biayaHarian) ?></div></div></div>
+  <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Tunai Bersih (<?= e(date('d/m', strtotime($filter['date'] ?: date('Y-m-d')))) ?>)</span>
+    <div class="metric-value num" style="color:<?= $tunaiBersih >= 0 ? '#198754' : '#dc3545' ?>"><?= rupiah($tunaiBersih) ?></div></div></div>
 </div>
 
 <div class="tt-card mb-3">
