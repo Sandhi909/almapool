@@ -1,4 +1,4 @@
-<div class="page-hero p-3 p-md-4 mb-3 d-flex flex-wrap align-items-center gap-3 position-relative" style="z-index:1">
+<div class="page-hero p-3 p-md-4 mb-3 d-flex flex-wrap align-items-center gap-3 position-relative no-print" style="z-index:1">
   <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1">
     <span class="hero-icon"><i class="bi bi-receipt-cutoff fs-4"></i></span>
     <div>
@@ -11,6 +11,25 @@
     <a class="btn bg-white text-primary fw-bold btn-sm" href="<?= url('index.php?page=laporan') ?>" style="border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.12)"><i class="bi bi-eye me-1"></i>Lihat & Cetak Laporan</a>
   </div>
 </div>
+
+<style>
+@media print {
+  .no-print, .page-hero, .tt-card.mb-3:first-of-type, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav { display: none !important; }
+  body { margin: 0; padding: 0; background: #fff; }
+  .tt-main { padding: 0; }
+  .tt-card { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+  .row.g-3.mb-3 { margin: 0 !important; }
+  .col-6, .col-xl { padding: 0 !important; margin-bottom: 8px !important; page-break-inside: avoid; }
+  .metric-label { font-size: 9px !important; color: #333 !important; }
+  .metric-value { font-size: 13px !important; }
+  .table-responsive { overflow: visible !important; }
+  table { font-size: 9px !important; width: 100% !important; border-collapse: collapse !important; }
+  th, td { border: 1px solid #000 !important; padding: 3px 4px !important; }
+  thead th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pill { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { margin: 10mm; size: A4; }
+}
+</style>
 
 <div class="row g-3 mb-3">
   <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transaksi (<?= e($filter['date'] ?: 'semua') ?>)</span>
@@ -48,7 +67,7 @@
       <button class="btn btn-tt" type="submit"><i class="bi bi-search"></i></button></div></div>
   </form>
   <div class="d-flex gap-2 mt-2 no-print">
-    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="printTransaksi()"><i class="bi bi-printer me-1"></i>Cetak Transaksi Harian</button>
+    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="window.print()"><i class="bi bi-printer me-1"></i>Cetak Transaksi Harian</button>
     <a class="btn btn-light btn-sm" href="<?= url('index.php?page=laporan') ?>"><i class="bi bi-file-earmark-bar-graph me-1"></i>Laporan Lengkap</a>
   </div>
 </div>
@@ -224,13 +243,6 @@ document.getElementById('biayaModal')?.addEventListener('show.bs.modal', functio
   modal.querySelector('.f-keterangan').value = row && row.notes ? row.notes : '';
   modal.querySelector('.modal-title').textContent = isEdit ? 'Edit Biaya Operasional' : 'Tambah Biaya Operasional';
 });
-
-function printTransaksi() {
-  const form = document.getElementById('filterForm');
-  const params = new URLSearchParams(new FormData(form));
-  params.set('page', 'transaksi-print');
-  window.open('<?= url('index.php') ?>?' + params.toString(), '_blank', 'width=900,height=700');
-}
 </script>
 <?php $pageScripts = ob_get_clean(); ?>
 
