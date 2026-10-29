@@ -30,7 +30,7 @@
 </div>
 
 <div class="tt-card mb-3">
-  <form method="get" action="<?= url('index.php') ?>" class="row g-2">
+  <form method="get" action="<?= url('index.php') ?>" class="row g-2" id="filterForm">
     <input type="hidden" name="page" value="transaksi">
     <div class="col-md-3"><label class="form-label small fw-semibold">Tanggal</label><input type="date" class="form-control" name="tgl" value="<?= e($filter['date']) ?>"></div>
     <div class="col-md-3"><label class="form-label small fw-semibold">Jenis Transaksi</label><select class="form-select" name="jenis">
@@ -47,6 +47,10 @@
       <input class="form-control" name="q" value="<?= e($filter['q']) ?>" placeholder="No. transaksi...">
       <button class="btn btn-tt" type="submit"><i class="bi bi-search"></i></button></div></div>
   </form>
+  <div class="d-flex gap-2 mt-2 no-print">
+    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="printTransaksi()"><i class="bi bi-printer me-1"></i>Cetak Transaksi Harian</button>
+    <a class="btn btn-light btn-sm" href="<?= url('index.php?page=laporan') ?>"><i class="bi bi-file-earmark-bar-graph me-1"></i>Laporan Lengkap</a>
+  </div>
 </div>
 
 <div class="tt-card mb-3">
@@ -220,6 +224,13 @@ document.getElementById('biayaModal')?.addEventListener('show.bs.modal', functio
   modal.querySelector('.f-keterangan').value = row && row.notes ? row.notes : '';
   modal.querySelector('.modal-title').textContent = isEdit ? 'Edit Biaya Operasional' : 'Tambah Biaya Operasional';
 });
+
+function printTransaksi() {
+  const form = document.getElementById('filterForm');
+  const params = new URLSearchParams(new FormData(form));
+  params.set('page', 'transaksi-print');
+  window.open('<?= url('index.php') ?>?' + params.toString(), '_blank', 'width=900,height=700');
+}
 </script>
 <?php $pageScripts = ob_get_clean(); ?>
 
