@@ -834,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let tendered = cash > 0 ? cash : total;
     if (pay === 'GABUNGAN') {
       payments = splitVals();
-      const s = payments.TUNAI + payments.QRIS + payments.TRANSFER;
+      const s = payments.TUNAI + payments.TAGIHAN + payments.QRIS + payments.TRANSFER;
       if (!Object.values(payments).some(v => v > 0)) {
         Swal.fire({ icon: 'warning', title: 'Rincian kosong', text: 'Isi nominal Tunai/QRIS/Transfer dulu.' });
         return;
