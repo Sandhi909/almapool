@@ -41,7 +41,7 @@ $isInstruktur = $role === 'instruktur';
       <?php $nav('transaksi', 'index.php?page=transaksi', 'bi-receipt-cutoff', 'Transaksi & Laporan'); ?>
       <?php $nav('laporan', 'index.php?page=laporan', 'bi-file-earmark-bar-graph-fill', 'Laporan Bulanan'); ?>
       <?php $nav('kunjungan', 'index.php?page=kunjungan', 'bi-people-fill', 'Laporan Kunjungan'); ?>
-      <?php if ($canInternalControl): ?>
+      <?php if ($role === 'internal_control'): ?>
         <?php $nav('stok-opname', 'index.php?page=stok-opname', 'bi-clipboard-check', 'Stok Opname'); ?>
       <?php endif; ?>
     <?php endif; ?>

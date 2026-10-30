@@ -43,10 +43,22 @@
     </div>
   </div>
   <div class="col-xl-6">
-    <div class="tt-card h-100">
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <b><i class="bi bi-pencil-square me-1"></i>Input Real (Internal Control)</b>
+    <div class="tt-card h-100" id="opnameFormCard">
+      <?php if ($existing): ?>
+      <script>document.addEventListener('DOMContentLoaded', function(){ var s=document.getElementById('opnameStart'); var f=document.getElementById('opnameForm'); if(s) s.classList.add('d-none'); if(f) f.classList.remove('d-none'); });</script>
+      <?php endif; ?>
+      <div class="text-center py-4" id="opnameStart">
+        <i class="bi bi-clipboard-check fs-1 text-primary"></i>
+        <h5 class="mt-2 fw-bold">Stok Opname — <?= e(tanggal_indo($date)) ?></h5>
+        <p class="text-muted small mb-3">Klik tombol di bawah untuk membuka form input stok opname</p>
+        <button class="btn btn-tt btn-lg" type="button" onclick="document.getElementById('opnameStart').classList.add('d-none'); document.getElementById('opnameForm').classList.remove('d-none');">
+          <i class="bi bi-unlock me-1"></i>Buka Stok Opname
+        </button>
       </div>
+      <div id="opnameForm" class="d-none">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <b><i class="bi bi-pencil-square me-1"></i>Input Real (Internal Control)</b>
+        </div>
       <form method="post" action="<?= url('index.php?page=stok-opname&tgl=' . urlencode($date)) ?>">
         <?= csrf_field() ?>
         <input type="hidden" name="tunai_masuk" value="<?= $tunaiMasuk ?>">
