@@ -9,7 +9,7 @@ $u = auth_user();
 $canKasir = in_array($role, ['admin', 'kasir'], true);
 $canOwner = in_array($role, ['admin', 'manajemen'], true);
 $canPetugas = in_array($role, ['admin', 'kasir', 'petugas'], true);
-$isInstruktur = $role === 'instruktur';
+$canInternalControl = in_array($role, ['admin', 'internal_control'], true);
 ?>
 <aside class="tt-sidebar" id="ttSidebar">
   <div class="tt-brand">
