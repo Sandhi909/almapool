@@ -10,6 +10,7 @@ $canKasir = in_array($role, ['admin', 'kasir'], true);
 $canOwner = in_array($role, ['admin', 'manajemen'], true);
 $canPetugas = in_array($role, ['admin', 'kasir', 'petugas'], true);
 $canInternalControl = in_array($role, ['admin', 'internal_control'], true);
+$isInstruktur = $role === 'instruktur';
 ?>
 <aside class="tt-sidebar" id="ttSidebar">
   <div class="tt-brand">
