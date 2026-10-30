@@ -3,7 +3,7 @@ class StokOpnameController
 {
     public function index(): array
     {
-        require_role(['admin', 'internal_control']);
+        require_role(['internal_control']);
         $date = (string) get_param('tgl', date('Y-m-d'));
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
