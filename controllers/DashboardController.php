@@ -3,7 +3,7 @@ class DashboardController
 {
     public function index(): array
     {
-        require_role(['admin', 'kasir', 'petugas', 'manajemen']);
+        require_role(['admin', 'kasir', 'petugas', 'manajemen', 'internal_control']);
         $rep = new Report();
         $d = $rep->dashboard();
         $set = (new Setting())->allAsMap();

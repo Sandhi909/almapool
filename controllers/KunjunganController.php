@@ -3,7 +3,7 @@ class KunjunganController
 {
     public function index(): array
     {
-        require_role(['admin', 'kasir', 'manajemen', 'petugas']);
+        require_role(['admin', 'kasir', 'manajemen', 'petugas', 'internal_control']);
         $type = (string) get_param('type', 'harian');
         if (!in_array($type, ['harian','mingguan','bulanan','rentang'], true)) $type='harian';
 

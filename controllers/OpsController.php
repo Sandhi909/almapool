@@ -101,7 +101,7 @@ class TransaksiController
 {
     public function index(): array
     {
-        require_role(['admin', 'kasir', 'manajemen']);
+        require_role(['admin', 'kasir', 'manajemen', 'internal_control']);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             csrf_verify();
             $this->handlePost();
@@ -245,7 +245,7 @@ class LaporanController
 {
     public function index(): array
     {
-        require_role(['admin', 'kasir', 'manajemen']);
+        require_role(['admin', 'kasir', 'manajemen', 'internal_control']);
         $type = (string) get_param('type', 'bulanan');
         $set = (new Setting())->allAsMap();
         $rep = new Report();

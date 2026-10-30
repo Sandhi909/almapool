@@ -54,7 +54,7 @@ $routes = [
     'kunjungan'  => ['KunjunganController', 'index', 'Laporan Kunjungan', 'kunjungan', 'Putra/Putri & External/Internal per periode'],
     'obat'       => ['MedicineController', 'index', 'Stok Obat', 'obat', 'Manajemen stok obat kolam'],
     'master'     => ['MasterController', 'index', 'Master Data & Pengaturan', 'master', 'Paket, tiket, user & pengaturan'],
-    'sewa'       => [null, null, 'Sewa Alat', 'sewa', 'Sewa peralatan kolam'],
+    'stok-opname' => ['StokOpnameController', 'index', 'Stok Opname', 'stok-opname', 'Verifikasi kas & stok harian'],
 ];
 if (!isset($routes[$page])) {
     http_response_code(404);

@@ -9,7 +9,7 @@ $u = auth_user();
 $canKasir = in_array($role, ['admin', 'kasir'], true);
 $canOwner = in_array($role, ['admin', 'manajemen'], true);
 $canPetugas = in_array($role, ['admin', 'kasir', 'petugas'], true);
-$isInstruktur = $role === 'instruktur';
+$canInternalControl = in_array($role, ['admin', 'internal_control'], true);
 ?>
 <aside class="tt-sidebar" id="ttSidebar">
   <div class="tt-brand">
@@ -36,10 +36,13 @@ $isInstruktur = $role === 'instruktur';
     <?php if ($canKasir): ?>
       <?php $nav('les', 'index.php?page=les', 'bi-tsunami', 'Les Renang & Jadwal'); ?>
     <?php endif; ?>
-    <?php if ($canKasir || $canOwner): ?>
+    <?php if ($canKasir || $canOwner || $canInternalControl): ?>
       <?php $nav('transaksi', 'index.php?page=transaksi', 'bi-receipt-cutoff', 'Transaksi & Laporan'); ?>
       <?php $nav('laporan', 'index.php?page=laporan', 'bi-file-earmark-bar-graph-fill', 'Laporan Bulanan'); ?>
       <?php $nav('kunjungan', 'index.php?page=kunjungan', 'bi-people-fill', 'Laporan Kunjungan'); ?>
+      <?php if ($canInternalControl): ?>
+        <?php $nav('stok-opname', 'index.php?page=stok-opname', 'bi-clipboard-check', 'Stok Opname'); ?>
+      <?php endif; ?>
     <?php endif; ?>
     <?php if ($canPetugas): ?>
       <?php $nav('obat', 'index.php?page=obat', 'bi-capsule', 'Stok Obat'); ?>

@@ -19,7 +19,7 @@ function auth_role(): ?string
 function is_admin(): bool { return auth_role() === 'admin'; }
 function is_kasir(): bool { return in_array(auth_role(), ['admin', 'kasir'], true); }
 function is_owner(): bool { return in_array(auth_role(), ['admin', 'manajemen'], true); }
-function is_manajemen(): bool { return is_owner(); }
+function is_internal_control(): bool { return auth_role() === 'internal_control'; }
 
 function auth_login(array $user): void
 {
