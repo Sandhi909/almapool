@@ -39,6 +39,13 @@ $roleLabel = [
     <?php if ($isInstruktur): ?>
       <?php $nav('absensi', 'index.php?page=absensi', 'bi-check2-square', 'Absensi Les'); ?>
     <?php endif; ?>
+    <?php if ($canKeuangan): ?>
+      <?php $nav('data-transaksi', 'index.php?page=data-transaksi', 'bi-journal-text', 'Data Transaksi'); ?>
+      <?php $nav('tagihan', 'index.php?page=tagihan', 'bi-receipt', 'Transaksi Tagihan'); ?>
+      <?php $nav('biaya-operasional', 'index.php?page=biaya-operasional', 'bi-wallet2', 'Biaya Operasional'); ?>
+      <?php $nav('kunjungan', 'index.php?page=kunjungan', 'bi-people-fill', 'Laporan Kunjungan'); ?>
+      <?php $nav('laporan', 'index.php?page=laporan', 'bi-file-earmark-bar-graph-fill', 'Laporan Bulanan'); ?>
+    <?php endif; ?>
     <?php if ($canKasir): ?>
       <?php $nav('kasir', 'index.php?page=kasir', 'bi-calculator-fill', 'Kasir & Tiket'); ?>
       <?php $nav('member', 'index.php?page=member', 'bi-person-badge-fill', 'Kelola Member'); ?>
@@ -52,17 +59,12 @@ $roleLabel = [
     <?php if ($canKasir || $canOwner || $canInternalControl): ?>
       <?php $nav('transaksi', 'index.php?page=transaksi', 'bi-receipt-cutoff', 'Transaksi & Laporan'); ?>
     <?php endif; ?>
-    <?php if ($canKasir || $canOwner || $canInternalControl || $canKeuangan): ?>
+    <?php if ($canKasir || $canOwner || $canInternalControl): ?>
       <?php $nav('laporan', 'index.php?page=laporan', 'bi-file-earmark-bar-graph-fill', 'Laporan Bulanan'); ?>
       <?php $nav('kunjungan', 'index.php?page=kunjungan', 'bi-people-fill', 'Laporan Kunjungan'); ?>
       <?php if ($role === 'internal_control'): ?>
         <?php $nav('stok-opname', 'index.php?page=stok-opname', 'bi-clipboard-check', 'Stok Opname'); ?>
       <?php endif; ?>
-    <?php endif; ?>
-    <?php if ($canKeuangan): ?>
-      <?php $nav('data-transaksi', 'index.php?page=data-transaksi', 'bi-journal-text', 'Data Transaksi'); ?>
-      <?php $nav('biaya-operasional', 'index.php?page=biaya-operasional', 'bi-wallet2', 'Biaya Operasional'); ?>
-      <?php $nav('tagihan', 'index.php?page=tagihan', 'bi-receipt', 'Transaksi Tagihan'); ?>
     <?php endif; ?>
     <?php if ($canPetugas): ?>
       <?php $nav('obat', 'index.php?page=obat', 'bi-capsule', 'Stok Obat'); ?>
