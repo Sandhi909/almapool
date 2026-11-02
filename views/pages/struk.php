@@ -7,7 +7,14 @@
     </div>
   </div>
   <div class="ms-auto d-flex gap-2 no-print" style="position:relative;z-index:1">
-    <a class="btn bg-white text-primary fw-bold btn-sm" href="<?= url('index.php?page=kasir') ?>" style="border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.12)"><i class="bi bi-arrow-left me-1"></i>Kasir</a>
+    <?php
+    $backFrom = (string) get_param('from', '');
+    if (!in_array($backFrom, ['tagihan', 'data-transaksi'], true)) {
+        $backFrom = auth_role() === 'keuangan' ? 'data-transaksi' : 'kasir';
+    }
+    $backLabel = ['tagihan' => 'Transaksi Tagihan', 'data-transaksi' => 'Data Transaksi', 'kasir' => 'Kasir'][$backFrom];
+    ?>
+    <a class="btn bg-white text-primary fw-bold btn-sm" href="<?= url('index.php?page=' . $backFrom) ?>" style="border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.12)"><i class="bi bi-arrow-left me-1"></i><?= e($backLabel) ?></a>
     <button class="btn bg-white bg-opacity-10 border border-white border-opacity-25 text-white btn-sm" type="button" onclick="window.print()" style="border-radius:12px;backdrop-filter:blur(8px)"><i class="bi bi-printer me-1"></i>Cetak</button>
   </div>
 </div>

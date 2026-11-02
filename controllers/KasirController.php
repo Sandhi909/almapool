@@ -253,7 +253,7 @@ class KasirController
     /** Struk tiket untuk pelanggan (bukti transaksi, siap cetak). */
     public function receipt(int $id): array
     {
-        require_role(['admin', 'kasir']);
+        require_role(['admin', 'kasir', 'keuangan']);
         $trx = new Transaction();
         $t = $trx->queryOne(
             'SELECT t.*, u.name AS kasir FROM transactions t LEFT JOIN users u ON u.id = t.cashier_id WHERE t.id = ?', [$id]);

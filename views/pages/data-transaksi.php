@@ -112,6 +112,7 @@ $periodeLabel = ($FILTER['from'] || $FILTER['to'])
           <th class="text-end">Total</th>
           <th>Metode</th>
           <th>Status</th>
+          <th class="text-end">Aksi</th>
         </tr>
       </thead>
       <tbody>
@@ -135,10 +136,13 @@ $periodeLabel = ($FILTER['from'] || $FILTER['to'])
             <?php if (($r['payment_method'] ?? '') === 'GABUNGAN'): ?><br><small class="text-muted" style="font-size:.65rem"><?= e(Transaction::payLabel($r)) ?></small><?php endif; ?>
           </td>
           <td><span class="pill <?= $isCancelled ? 'pill-red' : 'pill-green' ?>"><span class="dot"></span><?= $isCancelled ? 'BATAL' : 'LUNAS' ?></span></td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="<?= url('index.php?page=struk&id=' . (int) $r['id'] . '&from=data-transaksi') ?>" target="_blank" rel="noopener" title="Lihat struk"><i class="bi bi-receipt"></i></a>
+          </td>
         </tr>
         <?php endforeach; ?>
         <?php if (!$ROWS): ?>
-        <tr><td colspan="9" class="text-center text-muted py-4">Tidak ada transaksi pada filter ini.</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-4">Tidak ada transaksi pada filter ini.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>

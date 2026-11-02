@@ -59,6 +59,7 @@
           <th>Metode</th>
           <th class="text-end">Nilai Tiket</th>
           <th class="text-end">Tagihan</th>
+          <th class="text-end">Aksi</th>
         </tr>
       </thead>
       <tbody>
@@ -79,10 +80,13 @@
           </td>
           <td class="text-end num"><?= $r['nilai_tiket'] > 0 ? rupiah($r['nilai_tiket']) : '<span class="text-muted">-</span>' ?></td>
           <td class="text-end num fw-bold" style="color:<?= $r['pay_tagihan'] > 0 ? '#dc3545' : '#6c757d' ?>"><?= rupiah($r['pay_tagihan']) ?></td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="<?= url('index.php?page=struk&id=' . (int) $r['id'] . '&from=tagihan') ?>" target="_blank" rel="noopener" title="Lihat struk"><i class="bi bi-receipt"></i></a>
+          </td>
         </tr>
         <?php endforeach; ?>
         <?php if (!$ROWS): ?>
-        <tr><td colspan="9" class="text-center text-muted py-4">Belum ada transaksi tagihan pada periode ini.</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-4">Belum ada transaksi tagihan pada periode ini.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
