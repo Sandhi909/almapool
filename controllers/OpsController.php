@@ -245,7 +245,7 @@ class LaporanController
 {
     public function index(): array
     {
-        require_role(['admin', 'kasir', 'manajemen', 'internal_control']);
+        require_role(['admin', 'kasir', 'manajemen', 'internal_control', 'keuangan']);
         $type = (string) get_param('type', 'bulanan');
         $set = (new Setting())->allAsMap();
         $rep = new Report();
@@ -363,6 +363,7 @@ class MasterController
                 'price_a' => to_money(post('a', 0)), 'price_b' => to_money(post('b', 0)), 'price_c' => to_money(post('c', 0)),
                 'is_active' => post('is_active') === '0' ? 0 : 1,
                 'is_internal' => post('is_internal') === '1' ? 1 : 0,
+                'is_tagihan' => post('is_tagihan') === '1' ? 1 : 0,
                 'require_jenjang' => post('require_jenjang') === '1' ? 1 : 0,
                 'require_nama' => post('require_nama') === '1' ? 1 : 0,
                 'require_usia' => post('require_usia') === '1' ? 1 : 0,
@@ -374,6 +375,7 @@ class MasterController
                     unset($d['serial_prefix'],$d['serial_next']);
                     $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
                 } elseif(str_contains($e->getMessage(),'require_usia')){ unset($d['require_usia']); $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
+                } elseif(str_contains($e->getMessage(),'is_tagihan')){ unset($d['is_tagihan']); $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
                 } else throw $e;
             }
             flash('success', 'Paket tiket disimpan.');
@@ -397,7 +399,7 @@ class MasterController
             flash('success', 'Instruktur disimpan.');
         } elseif ($act === 'user') {
             $d = ['name' => (string) post('nama', ''), 'username' => (string) post('username', ''),
-                'role' => in_array(post('role'), ['admin', 'kasir', 'petugas', 'manajemen', 'instruktur'], true) ? post('role') : 'kasir',
+                'role' => in_array(post('role'), ['admin', 'kasir', 'petugas', 'manajemen', 'instruktur', 'internal_control', 'keuangan'], true) ? post('role') : 'kasir',
                 'is_active' => post('is_active') === '0' ? 0 : 1];
             if (!$id && post('password', '') === '') {
                 flash('error', 'Password wajib diisi untuk user baru.');

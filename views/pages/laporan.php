@@ -176,7 +176,7 @@ $lapLastDay = (int) date('t', mktime(0, 0, 0, $lapMonth, 1, $lapYear));
     </form>
     <div class="d-flex gap-2 no-print">
       <button class="btn btn-light btn-sm" type="button" onclick="window.print()"><i class="bi bi-printer me-1"></i>Cetak</button>
-      <a class="btn btn-light btn-sm" href="<?= url('index.php?page=transaksi') ?>">Kembali</a>
+      <a class="btn btn-light btn-sm" href="<?= url(auth_role() === 'keuangan' ? 'index.php?page=tagihan' : 'index.php?page=transaksi') ?>">Kembali</a>
     </div>
   </div>
   <script>

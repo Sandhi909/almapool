@@ -5,7 +5,11 @@ class OpCost extends Model
     public function monthly(int $year, int $month): array
     {
         return $this->query(
-            "SELECT oc.*, et.name as expense_type_name FROM operational_costs oc LEFT JOIN expense_types et ON oc.expense_type_id = et.id WHERE DATE_FORMAT(oc.cost_date,'%Y-%m') = ?
+            "SELECT oc.*, et.name as expense_type_name, u.name as created_by_name
+             FROM operational_costs oc
+             LEFT JOIN expense_types et ON oc.expense_type_id = et.id
+             LEFT JOIN users u ON u.id = oc.created_by
+             WHERE DATE_FORMAT(oc.cost_date,'%Y-%m') = ?
              ORDER BY oc.cost_date DESC, oc.id DESC", [sprintf('%04d-%02d', $year, $month)]);
     }
     public function daily(string $date): array

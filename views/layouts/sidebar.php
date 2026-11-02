@@ -10,7 +10,17 @@ $canKasir = in_array($role, ['admin', 'kasir'], true);
 $canOwner = in_array($role, ['admin', 'manajemen'], true);
 $canPetugas = in_array($role, ['admin', 'kasir', 'petugas'], true);
 $canInternalControl = in_array($role, ['admin', 'internal_control'], true);
+$canKeuangan = $role === 'keuangan';
 $isInstruktur = $role === 'instruktur';
+$roleLabel = [
+  'admin' => 'Administrator',
+  'kasir' => 'Loket Pendaftaran',
+  'petugas' => 'Petugas Kolam',
+  'manajemen' => 'Manajemen',
+  'instruktur' => 'Instruktur',
+  'internal_control' => 'Internal Control',
+  'keuangan' => 'Keuangan',
+][$role ?? ''] ?? ucfirst($role ?? '');
 ?>
 <aside class="tt-sidebar" id="ttSidebar">
   <div class="tt-brand">
@@ -19,7 +29,7 @@ $isInstruktur = $role === 'instruktur';
   </div>
   <div class="tt-session">
     <span class="dot"></span>
-    <div><b><?= e($u['name'] ?? '-') ?></b><br><span class="text-muted"><?= e(ucfirst($role ?? '')) ?> &bull; Loket Pendaftaran</span></div>
+    <div><b><?= e($u['name'] ?? '-') ?></b><br><span class="text-muted"><?= e($roleLabel) ?></span></div>
   </div>
   <nav class="tt-nav">
     <div class="nav-cap">NAVIGASI UTAMA</div>
@@ -33,17 +43,25 @@ $isInstruktur = $role === 'instruktur';
       <?php $nav('kasir', 'index.php?page=kasir', 'bi-calculator-fill', 'Kasir & Tiket'); ?>
       <?php $nav('member', 'index.php?page=member', 'bi-person-badge-fill', 'Kelola Member'); ?>
     <?php endif; ?>
-    <?php $nav('scan', 'index.php?page=scan', 'bi-qr-code-scan', 'Scan & Check-in'); ?>
+    <?php if ($canPetugas): ?>
+      <?php $nav('scan', 'index.php?page=scan', 'bi-qr-code-scan', 'Scan & Check-in'); ?>
+    <?php endif; ?>
     <?php if ($canKasir): ?>
       <?php $nav('les', 'index.php?page=les', 'bi-tsunami', 'Les Renang & Jadwal'); ?>
     <?php endif; ?>
     <?php if ($canKasir || $canOwner || $canInternalControl): ?>
       <?php $nav('transaksi', 'index.php?page=transaksi', 'bi-receipt-cutoff', 'Transaksi & Laporan'); ?>
+    <?php endif; ?>
+    <?php if ($canKasir || $canOwner || $canInternalControl || $canKeuangan): ?>
       <?php $nav('laporan', 'index.php?page=laporan', 'bi-file-earmark-bar-graph-fill', 'Laporan Bulanan'); ?>
       <?php $nav('kunjungan', 'index.php?page=kunjungan', 'bi-people-fill', 'Laporan Kunjungan'); ?>
       <?php if ($role === 'internal_control'): ?>
         <?php $nav('stok-opname', 'index.php?page=stok-opname', 'bi-clipboard-check', 'Stok Opname'); ?>
       <?php endif; ?>
+    <?php endif; ?>
+    <?php if ($canKeuangan): ?>
+      <?php $nav('biaya-operasional', 'index.php?page=biaya-operasional', 'bi-wallet2', 'Biaya Operasional'); ?>
+      <?php $nav('tagihan', 'index.php?page=tagihan', 'bi-receipt', 'Transaksi Tagihan'); ?>
     <?php endif; ?>
     <?php if ($canPetugas): ?>
       <?php $nav('obat', 'index.php?page=obat', 'bi-capsule', 'Stok Obat'); ?>

@@ -20,6 +20,7 @@ function is_admin(): bool { return auth_role() === 'admin'; }
 function is_kasir(): bool { return in_array(auth_role(), ['admin', 'kasir'], true); }
 function is_owner(): bool { return in_array(auth_role(), ['admin', 'manajemen'], true); }
 function is_internal_control(): bool { return auth_role() === 'internal_control'; }
+function is_keuangan(): bool { return auth_role() === 'keuangan'; }
 
 function auth_login(array $user): void
 {
