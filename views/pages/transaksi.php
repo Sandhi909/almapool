@@ -13,52 +13,99 @@
 </div>
 
 <style>
-/* Print header yang hanya muncul saat cetak */
-.print-header { display: none; }
+/* Print-only elements: hidden on screen, shown on print */
+.print-only { display: none; }
 @media print {
-  .no-print, .page-hero, .tt-card.mb-3:first-of-type, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav, .btn-group, .tt-topbar, .tt-sidebar, .tt-breadcrumb { display: none !important; }
-  body { margin: 0; padding: 0; background: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  .no-print, .page-hero, .btn, .btn-group, .input-group, form, .modal, .sidebar, .topbar, .flash, footer, header, nav, .tt-topbar, .tt-sidebar, .tt-breadcrumb, .print-footer { display: none !important; }
+  .print-only { display: block !important; }
+  body { margin: 0; padding: 0; background: #fff; }
   .tt-main { padding: 0 !important; }
-  
-  /* Print header */
-  .print-header { display: block !important; text-align: center; margin-bottom: 12px; border-bottom: 2px solid #1a1a2e; padding-bottom: 8px; }
-  .print-header h1 { margin: 0; font-size: 16px; font-weight: 700; color: #1a1a2e; letter-spacing: 1px; }
-  .print-header .subtitle { font-size: 11px; color: #444; margin-top: 2px; font-weight: 500; }
-  .print-header .periode { font-size: 10px; color: #666; margin-top: 1px; }
-  .print-header .logo { height: 40px; margin-bottom: 4px; }
-  
   .tt-card { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
-  .row.g-3.mb-3 { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; margin: 0 0 12px 0 !important; }
-  .col-6, .col-xl { padding: 0 !important; margin-bottom: 0 !important; page-break-inside: avoid; }
-  .metric-label { font-size: 8.5px !important; color: #333 !important; text-transform: uppercase; letter-spacing: 0.3px; }
-  .metric-value { font-size: 13px !important; }
-  .tt-card .metric-label { margin-bottom: 2px; }
-  .tt-card .metric-value { font-weight: 700; font-variant-numeric: tabular-nums; font-family: 'Segoe UI', monospace; }
-  
-  .table-responsive { overflow: visible !important; }
-  table { font-size: 9px !important; width: 100% !important; border-collapse: collapse !important; margin-top: 8px !important; }
-  th, td { border: 1px solid #000 !important; padding: 3px 4px !important; vertical-align: middle !important; }
-  thead th { background: #1a1a2e !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 700; font-size: 8.5px !important; text-align: center; }
-  tbody tr:nth-child(even) { background: #f9f9f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .pill { border: 1px solid #666 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 8px !important; padding: 1px 4px !important; border-radius: 999px; display: inline-block; }
-  
-  /* footer info */
-  .print-footer { display: block !important; margin-top: 15px; text-align: center; font-size: 8.5px; color: #666; border-top: 1px solid #ccc; padding-top: 8px; }
-  
-  @page { margin: 12mm 10mm; size: A4; }
+
+  /* ===== Laporan harian style (mengikuti laporan.php) ===== */
+  .lap-wrap { font-family: Arial, Helvetica, sans-serif; font-size: 10.5px; color: #111; background: #fff; }
+  .lap-wrap table { border-collapse: collapse; width: 100%; margin-bottom: 2px; page-break-inside: auto; }
+  .lap-wrap th, .lap-wrap td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; }
+  .lap-wrap thead th { background: #d7e7f7 !important; text-align: center; font-weight: 700; }
+  .lap-wrap tr.sec td, .lap-wrap tr.sec th { background: #fbe3ae !important; font-weight: 700; }
+  .lap-wrap tr.sec-bop td, .lap-wrap tr.sec-bop th { background: #d7e7f7 !important; font-weight: 700; }
+  .lap-wrap tr.total-row td { background: #bae6fd !important; font-weight: 700; }
+  .lap-wrap .c { text-align: center; }
+  .lap-wrap .r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .lap-wrap .b { font-weight: 700; }
+  .lap-title { text-align: center; font-weight: 700; }
+  .lap-wrap tr { page-break-inside: avoid; page-break-after: auto; }
+  .lap-wrap img { max-height: 50px; }
+
+  @page { margin: 10mm 8mm; size: A4; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
 
-<!-- Print header (only visible when printing) -->
-<div class="print-header">
-  <img src="<?= url(APP_LOGO) ?>" alt="Logo" class="logo">
-  <h1><?= e(defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem') ?></h1>
-  <div class="subtitle">LAPORAN TRANSAKSI HARIAN</div>
-  <div class="periode"><?= e(hari_tanggal_indo($filter['date'] ?: date('Y-m-d'))) ?></div>
+<!-- Print-only document (mengikuti gaya laporan harian) -->
+<div class="print-only lap-wrap" id="printDoc">
+  <div class="text-center mb-1"><img src="<?= url(APP_LOGO) ?>" alt="Logo" style="height:56px"></div>
+  <div class="lap-title" style="font-size:14px">LAPORAN TRANSAKSI HARIAN</div>
+  <div class="lap-title mb-1" style="font-size:12px;font-weight:400"><?= e(defined('APP_NAME') ? APP_NAME : 'Kolam Renang Al Ma\'soem') ?></div>
+  <div class="text-center fst-italic mb-2" style="font-size:11px"><?= e(hari_tanggal_indo($filter['date'] ?: date('Y-m-d'))) ?></div>
+
+  <table>
+    <tbody>
+      <tr class="sec"><td style="width:26px">I.</td><td colspan="4">Ringkasan Penerimaan</td></tr>
+      <tr><td></td><td>Tunai (termasuk Tagihan)</td><td class="r" style="width:120px"><?= number_format($sumHari['by']['TUNAI'], 0, ',', '.') ?></td>
+        <td style="width:170px">QRIS</td><td class="r" style="width:120px"><?= number_format($sumHari['by']['QRIS'], 0, ',', '.') ?></td></tr>
+      <tr><td></td><td>Transfer</td><td class="r"><?= number_format($sumHari['by']['TRANSFER'], 0, ',', '.') ?></td>
+        <td>Jumlah Transaksi</td><td class="r"><?= (int) $sumHari['count'] ?></td></tr>
+      <tr><td></td><td>Total Penerimaan</td><td class="r b"><?= number_format($sumHari['total'], 0, ',', '.') ?></td>
+        <td>Total Biaya Operasional</td><td class="r"><?= number_format($biayaHarian, 0, ',', '.') ?></td></tr>
+      <tr class="total-row"><td></td><td colspan="2">Tunai Bersih (Tunai &minus; Biaya)</td><td class="r b" colspan="2"><?= number_format($tunaiBersih, 0, ',', '.') ?></td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead>
+      <tr class="sec"><th colspan="9" style="text-align:left">II.&nbsp;&nbsp;Daftar Transaksi</th></tr>
+      <tr>
+        <th style="width:26px">No</th>
+        <th style="width:120px">Nomor</th>
+        <th style="width:50px">Waktu</th>
+        <th>Jenis / Detail</th>
+        <th style="width:60px">Kolam</th>
+        <th style="width:80px">Kasir</th>
+        <th style="width:90px" class="c">Total (Rp)</th>
+        <th style="width:80px">Metode</th>
+        <th style="width:70px">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php $no = 1; foreach ($TRANSAKSI as $tr): ?>
+      <tr>
+        <td class="c"><?= $no++ ?></td>
+        <td class="b" style="font-size:10px"><?= e($tr['number']) ?></td>
+        <td class="c"><?= e((new DateTime($tr['created_at'], new DateTimeZone('Asia/Jakarta')))->format('H:i')) ?></td>
+        <td style="font-size:10px"><?= e($tr['type']) ?><?php if (!empty($tr['jenis_detail'])): ?> &middot; <?= e($tr['jenis_detail']) ?><?php endif; ?></td>
+        <td class="c"><?= e($tr['area']==='CAMPURAN'?'Putra/Putri':ucfirst(strtolower($tr['area']))) ?></td>
+        <td style="font-size:10px"><?= e($tr['kasir'] ?: '-') ?></td>
+        <td class="r b"><?= number_format($tr['amount'], 0, ',', '.') ?></td>
+        <td class="c"><?= e($tr['payment_method'] === 'TAGIHAN' ? 'TAGIHAN' : $tr['payment_method']) ?><?php if (($tr['payment_method'] ?? '') === 'GABUNGAN'): ?><br><span style="font-size:8px;color:#555"><?= e(Transaction::payLabel($tr)) ?></span><?php endif; ?></td>
+        <td class="c"><?= e($tr['payment_status']) ?></td>
+      </tr>
+      <?php endforeach; ?>
+      <?php if (!$TRANSAKSI): ?>
+      <tr><td colspan="9" class="c" style="padding:14px;color:#777">Tidak ada transaksi pada periode ini.</td></tr>
+      <?php endif; ?>
+    </tbody>
+    <tfoot>
+      <tr class="sec-bop"><td colspan="6" class="r">TOTAL</td><td class="r b"><?= number_format($sumHari['total'], 0, ',', '.') ?></td><td colspan="2"></td></tr>
+    </tfoot>
+  </table>
+
+  <div style="margin-top:18px;font-size:9px;color:#555;border-top:1px solid #999;padding-top:6px;text-align:center">
+    Dicetak pada: <?= hari_tanggal_indo() ?> <?= date('H:i') ?> WIB &bull; Sistem Kolam Renang Al Ma'soem
+  </div>
 </div>
 
-<div class="row g-3 mb-3">
+<div class="row g-3 mb-3 no-print">
   <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Transaksi (<?= e($filter['date'] ?: 'semua') ?>)</span>
     <div class="metric-value num"><?= $sumHari['count'] ?></div></div></div>
   <div class="col-6 col-xl"><div class="tt-card"><span class="metric-label">Total</span>
@@ -75,7 +122,7 @@
     <div class="metric-value num" style="color:<?= $tunaiBersih >= 0 ? '#198754' : '#dc3545' ?>"><?= rupiah($tunaiBersih) ?></div></div></div>
 </div>
 
-<div class="tt-card mb-3">
+<div class="tt-card mb-3 no-print">
   <form method="get" action="<?= url('index.php') ?>" class="row g-2" id="filterForm">
     <input type="hidden" name="page" value="transaksi">
     <div class="col-md-3"><label class="form-label small fw-semibold">Tanggal</label><input type="date" class="form-control" name="tgl" value="<?= e($filter['date']) ?>"></div>
@@ -99,7 +146,7 @@
   </div>
 </div>
 
-<div class="tt-card mb-3">
+<div class="tt-card mb-3 no-print">
   <div class="d-flex align-items-center gap-2 mb-2">
     <b><i class="bi bi-receipt-cutoff me-1"></i>Semua Transaksi</b>
     <small class="ms-auto text-muted">Nomor otomatis: TRX-YYYYMMDD-0001</small>
@@ -150,12 +197,6 @@
       </tbody>
     </table>
   </div>
-</div>
-
-
-<!-- Print footer -->
-<div class="print-footer">
-  Dicetak pada: <?= hari_tanggal_indo() ?> <?= date('H:i') ?> WIB | Sistem Kolam Renang Al Ma'soem
 </div>
 
 <?php foreach ($TRANSAKSI as $tr): if($tr['payment_status']!=='PAID' || $tr['type']!=='TIKET' || (time()-strtotime($tr['created_at'])>=24*3600)) continue; ?>
