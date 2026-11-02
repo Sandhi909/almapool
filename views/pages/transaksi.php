@@ -52,20 +52,17 @@
   <table style="table-layout:fixed">
     <colgroup>
       <col style="width:28px">
-      <col style="width:30%">
-      <col style="width:18%">
-      <col style="width:30%">
-      <col style="width:18%">
+      <col style="width:70%">
+      <col style="width:27%">
     </colgroup>
     <tbody>
-      <tr class="sec"><td>I.</td><td colspan="4">Ringkasan Penerimaan</td></tr>
-      <tr><td></td><td>Tunai (termasuk Tagihan)</td><td class="r"><?= number_format($sumHari['by']['TUNAI'], 0, ',', '.') ?></td>
-        <td>QRIS</td><td class="r"><?= number_format($sumHari['by']['QRIS'], 0, ',', '.') ?></td></tr>
-      <tr><td></td><td>Transfer</td><td class="r"><?= number_format($sumHari['by']['TRANSFER'], 0, ',', '.') ?></td>
-        <td>Jumlah Transaksi</td><td class="r"><?= (int) $sumHari['count'] ?></td></tr>
-      <tr><td></td><td>Total Penerimaan</td><td class="r b"><?= number_format($sumHari['total'], 0, ',', '.') ?></td>
-        <td>Total Biaya Operasional</td><td class="r"><?= number_format($biayaHarian, 0, ',', '.') ?></td></tr>
-      <tr class="total-row"><td></td><td colspan="2">Tunai Bersih (Tunai &minus; Biaya)</td><td class="r b" colspan="2"><?= number_format($tunaiBersih, 0, ',', '.') ?></td></tr>
+      <tr class="sec"><td>I.</td><td colspan="2">Ringkasan Penerimaan</td></tr>
+      <tr><td></td><td>Tunai</td><td class="r"><?= number_format($sumHari['by']['TUNAI'], 0, ',', '.') ?></td></tr>
+      <tr><td></td><td>QRIS</td><td class="r"><?= number_format($sumHari['by']['QRIS'], 0, ',', '.') ?></td></tr>
+      <tr><td></td><td>Transfer</td><td class="r"><?= number_format($sumHari['by']['TRANSFER'], 0, ',', '.') ?></td></tr>
+      <tr><td></td><td>Total Penerimaan</td><td class="r b"><?= number_format($sumHari['total'], 0, ',', '.') ?></td></tr>
+      <tr><td></td><td>Total Biaya Operasional</td><td class="r"><?= number_format($biayaHarian, 0, ',', '.') ?></td></tr>
+      <tr class="total-row"><td></td><td>Tunai Bersih (Tunai &minus; Biaya)</td><td class="r b"><?= number_format($tunaiBersih, 0, ',', '.') ?></td></tr>
     </tbody>
   </table>
 
