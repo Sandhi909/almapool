@@ -54,6 +54,7 @@ $routes = [
     'kunjungan'  => ['KunjunganController', 'index', 'Laporan Kunjungan', 'kunjungan', 'Putra/Putri & External/Internal per periode'],
     'biaya-operasional' => ['KeuanganController', 'biaya', 'Biaya Operasional', 'biaya-operasional', 'Daftar biaya operasional (read-only)'],
     'tagihan'    => ['KeuanganController', 'tagihan', 'Transaksi Tagihan', 'tagihan', 'Daftar transaksi tagihan keuangan'],
+    'data-transaksi' => ['KeuanganController', 'transaksi', 'Data Transaksi', 'data-transaksi', 'Seluruh transaksi kasir (read-only)'],
     'obat'       => ['MedicineController', 'index', 'Stok Obat', 'obat', 'Manajemen stok obat kolam'],
     'master'     => ['MasterController', 'index', 'Master Data & Pengaturan', 'master', 'Paket, tiket, user & pengaturan'],
     'stok-opname' => ['StokOpnameController', 'index', 'Stok Opname', 'stok-opname', 'Verifikasi kas & stok harian'],

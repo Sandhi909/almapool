@@ -60,6 +60,7 @@ $roleLabel = [
       <?php endif; ?>
     <?php endif; ?>
     <?php if ($canKeuangan): ?>
+      <?php $nav('data-transaksi', 'index.php?page=data-transaksi', 'bi-journal-text', 'Data Transaksi'); ?>
       <?php $nav('biaya-operasional', 'index.php?page=biaya-operasional', 'bi-wallet2', 'Biaya Operasional'); ?>
       <?php $nav('tagihan', 'index.php?page=tagihan', 'bi-receipt', 'Transaksi Tagihan'); ?>
     <?php endif; ?>

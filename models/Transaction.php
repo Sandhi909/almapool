@@ -129,6 +129,69 @@ class Transaction extends Model
         return $this->query('SELECT * FROM transaction_items WHERE transaction_id = ? ORDER BY id', [$id]);
     }
 
+    /** Builder WHERE untuk laporan transaksi (rentang tanggal, jenis, metode, status, cari). */
+    private function rangeWhere(array $filter): array
+    {
+        $where = ['1=1'];
+        $params = [];
+        if (!empty($filter['from'])) { $where[] = 'DATE(t.created_at) >= ?'; $params[] = $filter['from']; }
+        if (!empty($filter['to'])) { $where[] = 'DATE(t.created_at) <= ?'; $params[] = $filter['to']; }
+        if (!empty($filter['type'])) { $where[] = 't.type = ?'; $params[] = $filter['type']; }
+        if (!empty($filter['method'])) { $where[] = 't.payment_method = ?'; $params[] = $filter['method']; }
+        if (!empty($filter['status'])) { $where[] = 't.payment_status = ?'; $params[] = $filter['status']; }
+        if (!empty($filter['q'])) {
+            $where[] = '(t.number LIKE ? OR u.name LIKE ? OR t.notes LIKE ?)';
+            $like = '%' . $filter['q'] . '%';
+            array_push($params, $like, $like, $like);
+        }
+        return [implode(' AND ', $where), $params];
+    }
+
+    /** Daftar transaksi dengan rentang tanggal + pagination (read-only, untuk role keuangan). */
+    public function listRange(array $filter = [], int $limit = 50, int $offset = 0): array
+    {
+        [$where, $params] = $this->rangeWhere($filter);
+        $limit = max(1, min(500, $limit));
+        $offset = max(0, $offset);
+        return $this->query(
+            'SELECT t.*, u.name AS kasir, (SELECT GROUP_CONCAT(CONCAT(CASE WHEN ti.item_type="TIKET" THEN CONCAT(COALESCE(tt.color,"-"), " - ", TRIM(LEADING "Tiket " FROM ti.item_name)) ELSE ti.item_name END, IF(ti.detail IS NOT NULL AND ti.detail<>"-" AND ti.detail<>"", CONCAT(" (",ti.detail,")"), ""), " x", TRIM(TRAILING ".0" FROM ti.quantity)) SEPARATOR ", ") FROM transaction_items ti LEFT JOIN ticket_types tt ON tt.id=ti.item_ref_id WHERE ti.transaction_id=t.id) AS jenis_detail FROM transactions t LEFT JOIN users u ON u.id = t.cashier_id
+             WHERE ' . $where . ' ORDER BY t.created_at DESC, t.id DESC LIMIT ' . $limit . ' OFFSET ' . $offset,
+            $params);
+    }
+
+    public function countRange(array $filter = []): int
+    {
+        [$where, $params] = $this->rangeWhere($filter);
+        $r = $this->queryOne('SELECT COUNT(*) n FROM transactions t LEFT JOIN users u ON u.id = t.cashier_id WHERE ' . $where, $params);
+        return (int) ($r['n'] ?? 0);
+    }
+
+    /** Ringkasan nominal (hanya transaksi PAID) untuk filter laporan transaksi. */
+    public function summaryRange(array $filter = []): array
+    {
+        [$where, $params] = $this->rangeWhere($filter);
+        $r = $this->queryOne(
+            "SELECT COUNT(*) n,
+                COALESCE(SUM(CASE WHEN t.payment_status='PAID' THEN t.amount ELSE 0 END),0) total,
+                COALESCE(SUM(CASE WHEN t.payment_status='PAID' AND t.payment_method IN ('TUNAI','TAGIHAN') THEN t.amount WHEN t.payment_status='PAID' AND t.payment_method='GABUNGAN' THEN t.pay_tunai + t.pay_tagihan ELSE 0 END),0) tunai,
+                COALESCE(SUM(CASE WHEN t.payment_status='PAID' AND t.payment_method='QRIS' THEN t.amount WHEN t.payment_status='PAID' AND t.payment_method='GABUNGAN' THEN t.pay_qris ELSE 0 END),0) qris,
+                COALESCE(SUM(CASE WHEN t.payment_status='PAID' AND t.payment_method='TRANSFER' THEN t.amount WHEN t.payment_status='PAID' AND t.payment_method='GABUNGAN' THEN t.pay_transfer ELSE 0 END),0) transfer,
+                COALESCE(SUM(CASE WHEN t.payment_status='PAID' THEN 1 ELSE 0 END),0) paid,
+                COALESCE(SUM(CASE WHEN t.payment_status='CANCELLED' THEN 1 ELSE 0 END),0) cancelled
+             FROM transactions t LEFT JOIN users u ON u.id = t.cashier_id
+             WHERE " . $where,
+            $params);
+        return [
+            'count' => (int) ($r['n'] ?? 0),
+            'total' => (float) ($r['total'] ?? 0),
+            'tunai' => (float) ($r['tunai'] ?? 0),
+            'qris' => (float) ($r['qris'] ?? 0),
+            'transfer' => (float) ($r['transfer'] ?? 0),
+            'paid' => (int) ($r['paid'] ?? 0),
+            'cancelled' => (int) ($r['cancelled'] ?? 0),
+        ];
+    }
+
     public function todaySummary(?string $date = null): array
     {
         $date = $date ?: date('Y-m-d');

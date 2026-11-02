@@ -17,6 +17,39 @@ class KeuanganController
         ];
     }
 
+    /** Data transaksi keseluruhan (read-only, dengan filter & pagination). */
+    public function transaksi(): array
+    {
+        require_role(['admin', 'keuangan']);
+        $from = trim((string) get_param('dari', ''));
+        $to = trim((string) get_param('sampai', ''));
+        if ($from !== '' && $to !== '' && $from > $to) [$from, $to] = [$to, $from];
+        $filter = [
+            'from' => $from,
+            'to' => $to,
+            'type' => (string) get_param('jenis', ''),
+            'method' => (string) get_param('metode', ''),
+            'status' => (string) get_param('status', ''),
+            'q' => trim((string) get_param('q', '')),
+        ];
+        if (!in_array($filter['type'], ['TIKET', 'MEMBER', 'LES', 'SEWA', 'TAMBAHAN'], true)) $filter['type'] = '';
+        if (!in_array($filter['method'], ['TUNAI', 'QRIS', 'TRANSFER', 'GABUNGAN', 'TAGIHAN'], true)) $filter['method'] = '';
+        if (!in_array($filter['status'], ['PAID', 'CANCELLED'], true)) $filter['status'] = '';
+
+        $perPage = 50;
+        $total = (new Transaction())->countRange($filter);
+        $pages = max(1, (int) ceil($total / $perPage));
+        $page = max(1, min($pages, (int) get_param('hal', 1)));
+        return [
+            'ROWS' => (new Transaction())->listRange($filter, $perPage, ($page - 1) * $perPage),
+            'FILTER' => $filter,
+            'SUM' => (new Transaction())->summaryRange($filter),
+            'PAGE' => $page,
+            'PAGES' => $pages,
+            'PER_PAGE' => $perPage,
+        ];
+    }
+
     /** Daftar biaya operasional (read-only). */
     public function biaya(): array
     {
