@@ -102,6 +102,16 @@ $settings = $settings ?? [];
                   <small class="text-muted" style="font-size:.7rem">Wajib pilih</small>
                 </div>
                 <?php endif; ?>
+                <?php if (!empty($t['kelas_aktif'])): ?>
+                <div class="rombongan-extra rombongan-kelas-extra mt-2 p-2 rounded-3" data-tiket-id="<?= $t['id'] ?>" data-require="kelas" style="<?= $flexShow ?>background:#fff7ed;border:1.5px solid #fed7aa">
+                  <label class="form-label small fw-bold mb-1"><i class="bi bi-door-open me-1"></i><?= e($t['name']) ?> — Kelas</label>
+                  <select class="form-select form-select-sm rombongan-kelas-input" data-ref="<?= $t['id'] ?>" id="rombongan-kelas-<?= $t['id'] ?>">
+                    <option value="">— Jenjang saja / tanpa kelas —</option>
+                    <?php for ($cl = 1; $cl <= 6; $cl++): ?><option value="Kelas <?= $cl ?>">Kelas <?= $cl ?></option><?php endfor; ?>
+                  </select>
+                  <small class="text-muted" style="font-size:.7rem">Tanpa kelas = tiket pakai jenjang saja. Harga tetap dihitung per orang (jumlah × tarif).</small>
+                </div>
+                <?php endif; ?>
                 <?php if (!empty($t['require_usia'] ?? 0)): ?>
                 <div class="rombongan-extra mt-2 p-2 rounded-3" data-tiket-id="<?= $t['id'] ?>" data-require="usia" style="<?= $flexShow ?>background:#f0fdfa;border:1.5px solid #a7f3d0">
                   <label class="form-label small fw-bold mb-1"><i class="bi bi-person me-1"></i><?= e($t['name']) ?> — Kelompok Usia</label>
@@ -397,6 +407,8 @@ document.addEventListener('DOMContentLoaded', function () {
       cart[key].jenjang = jEl ? jEl.value.trim() : '';
       cart[key].usia = uEl ? uEl.value.trim() : '';
       cart[key].rombongan = nEl ? rombonganNamaValue(nEl) : '';
+      const kEl = document.getElementById('rombongan-kelas-'+ref);
+      cart[key].kelas = kEl ? kEl.value.trim() : '';
     }
     if (el.dataset.kind === 'member') {
       if (!memberId) { Swal.fire({ icon: 'warning', title: 'Pilih member dulu', text: 'Wajib pilih member.' }); syncInput(key,0); return; }
@@ -424,6 +436,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if(it.jenjang) extraBadges.push('<span class="badge bg-info" style="font-size:.62rem">'+esc(it.jenjang)+'</span>');
       if(it.usia) extraBadges.push('<span class="badge bg-success" style="font-size:.62rem">'+esc(it.usia)+'</span>');
       if(it.rombongan) extraBadges.push('<span class="badge bg-warning text-dark" style="font-size:.62rem">'+esc(it.rombongan)+'</span>');
+      if(it.kelas) extraBadges.push('<span class="badge bg-secondary" style="font-size:.62rem">'+esc(it.kelas)+'</span>');
       let nameHtml = '<b style="font-size:.85rem">' + esc(it.nama) + '</b>';
       let priceHtml = '<small class="text-muted">' + fmt(it.harga) + ' × ' + it.qty + '</small>';
       if (it.kind === 'sewa') {
@@ -493,12 +506,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const needJ = !!card?.querySelector('.rombongan-jenjang-input');
         const needU = !!card?.querySelector('.rombongan-usia-input');
         const needN = !!card?.querySelector('.rombongan-nama-input');
+        const needK = !!card?.querySelector('.rombongan-kelas-input');
         const parts = String(it.item_name||'').split(' - ');
         let pi = parts.length;
+        const kl = needK ? (parts[--pi]||'') : '';
         const rb = needN ? (parts[--pi]||'') : '';
         const us = needU ? (parts[--pi]||'') : '';
         const jn = needJ ? (parts[--pi]||'') : '';
         if(needJ){ const el = document.getElementById('rombongan-jenjang-'+it.item_ref_id); if(el) el.value = jn; }
+        if(needK){ const el = document.getElementById('rombongan-kelas-'+it.item_ref_id); if(el) el.value = kl; }
         if(needU){ const el = document.getElementById('rombongan-usia-'+it.item_ref_id); if(el) el.value = us; }
         if(needN){
           const el = document.getElementById('rombongan-nama-'+it.item_ref_id);
@@ -509,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         cart[key] = {kind:'tiket', ref:it.item_ref_id, detail:area, area:area,
           nama:it.item_name+' ('+area+') (Tarif '+(editData.tarif||tarif)+')',
-          harga:harga, qty:qty, jenjang:jn, usia:us, rombongan:rb};
+          harga:harga, qty:qty, jenjang:jn, usia:us, rombongan:rb, kelas:kl};
       } else if(type==='MEMBER'){
         const pkgName = String(it.item_name||'').replace(/^Member\s+/i,'').trim();
         const key = 'member-'+pkgName;
@@ -597,9 +613,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const jEl = document.getElementById('rombongan-jenjang-'+ref);
       const uEl = document.getElementById('rombongan-usia-'+ref);
       const nEl = document.getElementById('rombongan-nama-'+ref);
+      const kEl = document.getElementById('rombongan-kelas-'+ref);
       const jenjang = jEl ? jEl.value.trim() : '';
       const usia = uEl ? uEl.value.trim() : '';
       const rombongan = nEl ? rombonganNamaValue(nEl) : '';
+      const kelasVal = kEl ? kEl.value.trim() : '';
       // validasi required
       const needJenjang = !!card.querySelector('.rombongan-jenjang-input');
       const needUsia = !!card.querySelector('.rombongan-usia-input');
@@ -607,12 +625,13 @@ document.addEventListener('DOMContentLoaded', function () {
       if(needJenjang && !jenjang){ Swal.fire({icon:'warning',title:'Jenjang wajib dipilih'}); if(jEl) jEl.focus(); return; }
       if(needUsia && !usia){ Swal.fire({icon:'warning',title:'Kelompok usia wajib dipilih'}); if(uEl) uEl.focus(); return; }
       if(needNama && !rombongan){ Swal.fire({icon:'warning',title:'Rombongan wajib dipilih'}); if(nEl) nEl.focus(); return; }
-      const key = 'tiket-flex-'+ref+'-'+area+'-'+(jenjang||'-')+'-'+(usia||'-')+'-'+(rombongan||'-')+'-'+Date.now();
+      const key = 'tiket-flex-'+ref+'-'+area+'-'+(jenjang||'-')+'-'+(usia||'-')+'-'+(rombongan||'-')+'-'+kelasVal+'-'+Date.now();
       let dispNama = nama+' ('+area+') (Tarif '+tarif+')';
       if(jenjang) dispNama+=' - '+jenjang;
       if(usia) dispNama+=' - '+usia;
       if(rombongan) dispNama+=' - '+rombongan;
-      cart[key]={kind:'tiket',ref:ref,area:area,qty:qty,harga:harga,nama:dispNama,jenjang:jenjang,usia:usia,rombongan:rombongan,detail:area};
+      if(kelasVal) dispNama+=' - '+kelasVal;
+      cart[key]={kind:'tiket',ref:ref,area:area,qty:qty,harga:harga,nama:dispNama,jenjang:jenjang,usia:usia,rombongan:rombongan,kelas:kelasVal,detail:area};
       render();
       Swal.fire({icon:'success',title:'Ditambahkan',text:dispNama+' x'+qty, timer:1200, showConfirmButton:false});
     });
@@ -782,6 +801,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.rombongan-usia-input').forEach(el=>el.value='');
     document.querySelectorAll('.rombongan-nama-input').forEach(el=>el.value='');
     document.querySelectorAll('.rombongan-nama-custom').forEach(el=>{el.value=''; el.classList.add('d-none');});
+    document.querySelectorAll('.rombongan-kelas-input').forEach(el=>el.value='');
    syncRombonganExtra(); render();
   }
   $('btnResetCart').addEventListener('click', resetCart);
@@ -810,6 +830,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if(it.jenjang && !rombonganJenjangMap[it.ref]) rombonganJenjangMap[it.ref]=it.jenjang;
       if(it.usia && !rombonganUsiaMap[it.ref]) rombonganUsiaMap[it.ref]=it.usia;
       if(it.rombongan && !rombonganNamaMap[it.ref]) rombonganNamaMap[it.ref]=it.rombongan;
+      if(it.kelas && !rombonganKelasMap[it.ref]) rombonganKelasMap[it.ref]=it.kelas;
     }
     // juga validasi lama untuk qty input langsung (jika ada yang belum masuk cart tapi qty>0)
     document.querySelectorAll('.rombongan-jenjang-input').forEach(el=>{
@@ -852,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function () {
       kind: cart[k].kind, ref: cart[k].ref, detail: cart[k].detail || '',
       area: cart[k].area || '', qty: cart[k].qty, amount: cart[k].kind === 'sewa' ? cart[k].harga : 0,
       nama: cart[k].kind === 'sewa' ? cart[k].nama : '',
-      jenjang: cart[k].jenjang || '', usia: cart[k].usia || '', rombongan: cart[k].rombongan || ''
+      jenjang: cart[k].jenjang || '', usia: cart[k].usia || '', rombongan: cart[k].rombongan || '', kelas: cart[k].kelas || ''
     }));
     const isEdit = !!(editData && editData.id);
     Swal.fire({ title: isEdit ? 'Simpan perubahan transaksi?' : 'Proses pembayaran ' + pay + '?', text: fmt(total), icon: 'question', showCancelButton: true, confirmButtonText: isEdit ? 'Simpan' : 'Bayar' })

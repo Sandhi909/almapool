@@ -43,7 +43,7 @@ $delForm = function (string $tabel, int $id): string {
             <td class="text-end num"><?= $t['price_a'] ? number_format($t['price_a'], 0, ',', '.') : '-' ?></td>
             <td class="text-end num"><?= $t['price_b'] ? number_format($t['price_b'], 0, ',', '.') : '-' ?></td>
             <td class="text-end num"><?= $t['price_c'] ? number_format($t['price_c'], 0, ',', '.') : '-' ?></td>
-            <td><?php if(!empty($t['is_internal'])) echo '<span class="pill pill-green" style="font-size:.65rem">Internal</span>'; else echo '<span class="pill pill-amber" style="font-size:.65rem">Eksternal</span>'; ?><?php if(!empty($t['is_tagihan'])) echo ' <span class="pill pill-blue" style="font-size:.65rem">Tagihan</span>'; ?></td>
+            <td><?php if(!empty($t['is_internal'])) echo '<span class="pill pill-green" style="font-size:.65rem">Internal</span>'; else echo '<span class="pill pill-amber" style="font-size:.65rem">Eksternal</span>'; ?><?php if(!empty($t['is_tagihan'])) echo ' <span class="pill pill-blue" style="font-size:.65rem">Tagihan</span>'; ?><?php if(!empty($t['kelas_aktif'])) echo ' <span class="pill" style="background:#ede9fe;color:#6d28d9">Kelas</span>'; ?></td>
             <td class="small"><?php if(!empty($t['require_jenjang'])) echo '<span class="pill pill-amber" style="font-size:.65rem">Jenjang</span> '; if(!empty($t['require_usia']??0)) echo '<span class="pill pill-green" style="font-size:.65rem">Usia</span> '; if(!empty($t['require_nama'])) echo '<span class="pill pill-blue" style="font-size:.65rem">Rombongan</span>'; if(empty($t['require_jenjang'])&&empty($t['require_nama'])&&empty($t['require_usia']??0)) echo '<span class="text-muted">-</span>'; ?></td>
             <td class="small num"><?= e($t['serial_prefix'] ?? '') ?><?= str_pad((string)($t['serial_next'] ?? 1),4,'0',STR_PAD_LEFT) ?> <small class="text-muted">next</small></td>
             <td><?= (int) $t['is_active'] ? '<span class="pill pill-green"><span class="dot"></span>Aktif</span>' : '<span class="pill pill-grey">Nonaktif</span>' ?></td>
@@ -320,7 +320,8 @@ $modal('tiketModal', 'Paket Tiket',
     . '<div class="col-4"><div class="form-check mt-2"><input class="form-check-input f-jenjang" type="checkbox" name="require_jenjang" value="1" id="tJenjang"><label class="form-check-label small fw-semibold" for="tJenjang">Butuh Jenjang</label></div></div>'
     . '<div class="col-4"><div class="form-check mt-2"><input class="form-check-input f-usia" type="checkbox" name="require_usia" value="1" id="tUsia"><label class="form-check-label small fw-semibold" for="tUsia">Butuh Kelompok Usia</label></div></div>'
     . '<div class="col-4"><div class="form-check mt-2"><input class="form-check-input f-nama-req" type="checkbox" name="require_nama" value="1" id="tNama"><label class="form-check-label small fw-semibold" for="tNama">Butuh Rombongan</label></div></div>'
-    . '<div class="col-12"><div class="form-check mt-2"><input class="form-check-input f-tagihan" type="checkbox" name="is_tagihan" value="1" id="tTagihan"><label class="form-check-label small fw-semibold" for="tTagihan">Tiket Tagihan (masuk daftar Transaksi Tagihan keuangan)</label></div></div>');
+    . '<div class="col-12"><div class="form-check mt-2"><input class="form-check-input f-tagihan" type="checkbox" name="is_tagihan" value="1" id="tTagihan"><label class="form-check-label small fw-semibold" for="tTagihan">Tiket Tagihan (masuk daftar Transaksi Tagihan keuangan)</label></div></div>'
+    . '<div class="col-12"><div class="form-check mt-2"><input class="form-check-input f-kelas" type="checkbox" name="kelas" value="1" id="tKelas"><label class="form-check-label small fw-semibold" for="tKelas">Opsi Kelas (Kelas 1-N dari tiket jenjang)</label></div></div>');
 $modal('paketModal', 'Paket Membership',
     'paket',
     '<div class="col-8"><label class="form-label fw-semibold">Jenis</label><input class="form-control f-nama" name="nama" required></div>'
@@ -375,12 +376,14 @@ document.querySelectorAll('.modal').forEach(function (md) {
     const nEl0 = md.querySelector('.f-nama-req'); if(nEl0) nEl0.checked = false;
     const uEl0 = md.querySelector('.f-usia'); if(uEl0) uEl0.checked = false;
     const tgEl0 = md.querySelector('.f-tagihan'); if(tgEl0) tgEl0.checked = false;
+    const kelasEl0 = md.querySelector('.f-kelas'); if(kelasEl0) kelasEl0.checked = false;
     if (!row) return;
     set('.f-nama', row.name); set('.f-warna', row.color); set('.f-a', row.price_a); set('.f-b', row.price_b); set('.f-c', row.price_c);
     const jenjangEl = md.querySelector('.f-jenjang'); if(jenjangEl) jenjangEl.checked = !!(row.require_jenjang && parseInt(row.require_jenjang));
     const usiaEl = md.querySelector('.f-usia'); if(usiaEl) usiaEl.checked = !!(row.require_usia && parseInt(row.require_usia));
     const namaEl = md.querySelector('.f-nama-req'); if(namaEl) namaEl.checked = !!(row.require_nama && parseInt(row.require_nama));
     const tagihanEl = md.querySelector('.f-tagihan'); if(tagihanEl) tagihanEl.checked = !!(row.is_tagihan && parseInt(row.is_tagihan));
+    const kelasEl = md.querySelector('.f-kelas'); if(kelasEl) kelasEl.checked = !!(row.kelas && parseInt(row.kelas));
     const katEl = md.querySelector('.f-kategori'); if(katEl) katEl.value = String(row.is_internal ?? 0);
     set('.f-prefix', row.serial_prefix); set('.f-seri', row.serial_next ?? 1);
     set('.f-tier', row.tier); set('.f-durasi', row.duration_days); set('.f-harga', row.price);

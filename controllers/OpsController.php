@@ -364,6 +364,7 @@ class MasterController
                 'is_active' => post('is_active') === '0' ? 0 : 1,
                 'is_internal' => post('is_internal') === '1' ? 1 : 0,
                 'is_tagihan' => post('is_tagihan') === '1' ? 1 : 0,
+                'kelas' => post('kelas') === '1' ? 1 : 0,
                 'require_jenjang' => post('require_jenjang') === '1' ? 1 : 0,
                 'require_nama' => post('require_nama') === '1' ? 1 : 0,
                 'require_usia' => post('require_usia') === '1' ? 1 : 0,
@@ -376,6 +377,7 @@ class MasterController
                     $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
                 } elseif(str_contains($e->getMessage(),'require_usia')){ unset($d['require_usia']); $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
                 } elseif(str_contains($e->getMessage(),'is_tagihan')){ unset($d['is_tagihan']); $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
+                } elseif(str_contains($e->getMessage(),'kelas')){ unset($d['kelas']); $id ? (new TicketType())->update($id,$d) : (new TicketType())->create($d);
                 } else throw $e;
             }
             flash('success', 'Paket tiket disimpan.');

@@ -85,6 +85,7 @@ class KasirController
         $rombonganJenjangMap = $in['rombongan_jenjang_map'] ?? [];
         $rombonganNamaMap = $in['rombongan_nama_map'] ?? [];
         $rombonganUsiaMap = $in['rombongan_usia_map'] ?? [];
+        $rombonganKelasMap = $in['rombongan_kelas_map'] ?? [];
         if (isset($in['rombongan_jenjang']) && !isset($rombonganJenjangMap[8])) $rombonganJenjangMap[8] = trim($in['rombongan_jenjang']);
         if (isset($in['rombongan_nama']) && !isset($rombonganNamaMap[9])) $rombonganNamaMap[9] = trim($in['rombongan_nama']);
         try{ $validJenjang = class_exists('MasterJenjang') ? array_column((new MasterJenjang())->active(),'name') : ['SD','SMP','SMA','Mahasiswa MU']; } catch(Throwable $e){ $validJenjang=['SD','SMP','SMA','Mahasiswa MU']; }
@@ -122,9 +123,11 @@ class KasirController
                 $jenjangVal = trim($it['jenjang'] ?? $rombonganJenjangMap[$refKey] ?? '');
                 $usiaVal = trim($it['usia'] ?? $rombonganUsiaMap[$refKey] ?? '');
                 $rombonganVal = trim($it['rombongan'] ?? $rombonganNamaMap[$refKey] ?? '');
+                $kelasVal = trim($it['kelas'] ?? $rombonganKelasMap[$refKey] ?? '');
                 if ($needJenjang && $jenjangVal!=='') $itemName .= ' - ' . $jenjangVal;
                 if ($needUsia && $usiaVal!=='') $itemName .= ' - ' . $usiaVal;
                 if ($needNama && $rombonganVal!=='') $itemName .= ' - ' . $rombonganVal;
+                if ($needJenjang && $kelasVal!=='') $itemName .= ' - ' . $kelasVal;
                 // validasi per-item untuk fleksibel
                 if ($needJenjang && $jenjangVal==='') json_response(['ok'=>false,'message'=>'Tiket "'.$t['name'].'" ('.$areaItem.') wajib pilih jenjang.'],422);
                 if ($needUsia && $usiaVal==='') json_response(['ok'=>false,'message'=>'Tiket "'.$t['name'].'" ('.$areaItem.') wajib pilih kelompok usia.'],422);
@@ -196,6 +199,7 @@ class KasirController
         foreach($rombonganJenjangMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Jenjang: '.$val; } }
         foreach($rombonganUsiaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Usia: '.$val; } }
         foreach($rombonganNamaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Rombongan: '.$val; } }
+        foreach($rombonganKelasMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Kelas: '.$val; } }
         if ($type === 'SEWA' && $sewaNames) {
             // Halaman Sewa memakai kolom notes sebagai keterangan alat.
             $notesParts = $sewaNames;
