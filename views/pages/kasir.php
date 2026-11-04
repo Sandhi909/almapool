@@ -877,6 +877,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const rombonganJenjangMap = {};
     const rombonganNamaMap = {};
     const rombonganUsiaMap = {};
+    const rombonganKelasMap = {};
     // isi map dari cart (ambil salah satu per ref untuk kompatibilitas lama)
     for(const k in cart){
       const it=cart[k]; if(it.kind!=='tiket' || it.qty<=0) continue;
@@ -940,7 +941,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if(cartAreas.length===1) areaGlobal=cartAreas[0];
         else if(cartAreas.length>1) areaGlobal='CAMPURAN';
         else if(cartAreas.length===0) areaGlobal = editData ? (editData.trx.area || 'PUTRA') : 'PUTRA';
-        const payload={ tarif: tarif, kelas: kelas, area: areaGlobal, payment: pay, payments: payments, tendered: tendered, member_id: memberId, student_id: studentId, items: items, rombongan_jenjang_map: rombonganJenjangMap, rombongan_nama_map: rombonganNamaMap, rombongan_usia_map: rombonganUsiaMap };
+        const payload={ tarif: tarif, kelas: kelas, area: areaGlobal, payment: pay, payments: payments, tendered: tendered, member_id: memberId, student_id: studentId, items: items, rombongan_jenjang_map: rombonganJenjangMap, rombongan_nama_map: rombonganNamaMap, rombongan_usia_map: rombonganUsiaMap, rombongan_kelas_map: rombonganKelasMap };
         if(editData && editData.id) payload.edit_id=editData.id;
         fetch('<?= url('index.php?page=kasir&ajax=checkout') ?>', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
