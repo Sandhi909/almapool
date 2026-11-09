@@ -273,7 +273,7 @@ class LaporanController
 
         return [
             'APP' => ['nama_kolam' => $set['nama_kolam'] ?? 'KOLAM RENANG AL MA’SOEM', 'periode' => $periode],
-            'LAPORAN' => $this->shape($repData, $set, $periode),
+            'LAPORAN' => $this->shape($repData, $set, $periode, $type),
             'TIKET' => (new TicketType())->active(),
             'MEMBER_PAKET' => (new MembershipPackage())->matrix(),
             'LES_PAKET' => (new LessonPackage())->active(),
@@ -282,7 +282,7 @@ class LaporanController
         ];
     }
 
-    private function shape(array $rep, array $set, string $periode): array
+    private function shape(array $rep, array $set, string $periode, string $type = 'bulanan'): array
 {
         $tiket = [];
         foreach ($rep['tickets'] as $t) {
@@ -317,11 +317,17 @@ class LaporanController
             ],
             'saldo_akhir' => ['bon' => null, 'tunai' => null],
             'keterangan' => ['Tarif A : Senin s.d Sabtu', 'Tarif B : Minggu & Libur Nasional', 'Tarif C : Idul Fitri'],
-            'ttd' => [
-                ['nama' => $set['ttd_admin'] ?? '-', 'jabatan' => $set['ttd_admin_jabatan'] ?? 'Administrasi Kolam'],
-                ['nama' => $set['ttd_manajer'] ?? '-', 'jabatan' => $set['ttd_manajer_jabatan'] ?? 'Manajer Kolam'],
-                ['nama' => $set['ttd_kepala'] ?? '-', 'jabatan' => $set['ttd_kepala_jabatan'] ?? 'Kepala Direktorat Pengelola Unit Bisnis'],
-            ],
+            'ttd' => (function() use ($set, $type) {
+                $ttd = [
+                    ['nama' => $set['ttd_admin'] ?? '-', 'jabatan' => $set['ttd_admin_jabatan'] ?? 'Administrasi Kolam'],
+                    ['nama' => $set['ttd_manajer'] ?? '-', 'jabatan' => $set['ttd_manajer_jabatan'] ?? 'Manajer Kolam'],
+                ];
+                // Kepala Direktorat hanya untuk mingguan & bulanan, tidak untuk harian
+                if (in_array($type, ['mingguan', 'bulanan'], true)) {
+                    $ttd[] = ['nama' => $set['ttd_kepala'] ?? '-', 'jabatan' => $set['ttd_kepala_jabatan'] ?? 'Kepala Direktorat Pengelola Unit Bisnis'];
+                }
+                return $ttd;
+            })(),
         ];
     }
 }
