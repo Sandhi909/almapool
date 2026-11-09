@@ -231,6 +231,14 @@ class KasirController
                 $pdo->prepare('UPDATE transactions SET type=?, member_id=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, pay_tagihan=?, area=?, notes=? WHERE id=?')->execute([$type,$memberId,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$payCols['TAGIHAN'],$areaFinal,$editNotes,$editId]);
                 $pdo->commit();
             } catch(Throwable $e){ if($pdo->inTransaction()) $pdo->rollBack(); json_response(['ok'=>false,'message'=>'Gagal edit: '.$e->getMessage()],500); }
+            
+            // Aktifkan/perpanjang membership untuk item member (edit juga perlu aktivasi).
+            foreach ($items as $it) {
+                if ($it['item_type'] === 'MEMBER' && $memberId) {
+                    (new Membership())->purchase($memberId, (int) $it['item_ref_id']);
+                }
+            }
+            
             $row = $trx->find($editId);
             json_response(['ok'=>true,'message'=>'Transaksi diperbarui.','number'=>$row['number'],'total'=>(float)$row['amount'],'receipt_id'=>$editId]);
         }
