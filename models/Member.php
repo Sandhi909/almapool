@@ -34,11 +34,11 @@ class Member extends Model
     public function listAll(?string $status = null): array
     {
         $rows = $this->query(
-            'SELECT m.*, ms.start_date, ms.end_date, ms.status AS ms_status, ms.package_id, mp.name AS paket, mp.tier
+            'SELECT m.*, ms.start_date, ms.end_date, ms.status AS ms_status, ms.package_id, ms.created_at AS ms_created_at, mp.name AS paket, mp.tier
               FROM members m
               LEFT JOIN memberships ms ON ms.id = (SELECT id FROM memberships WHERE member_id = m.id ORDER BY end_date DESC, id DESC LIMIT 1)
               LEFT JOIN membership_packages mp ON mp.id = ms.package_id
-              ORDER BY m.created_at DESC');
+              ORDER BY (ms.start_date IS NULL) ASC, ms.start_date DESC, m.created_at DESC');
         if ($status === null) return $rows;
         return array_values(array_filter($rows, fn ($r) => $this->derivedStatus($r) === $status));
     }
