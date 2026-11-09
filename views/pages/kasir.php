@@ -222,7 +222,7 @@ $settings = $settings ?? [];
           <tbody>
             <?php foreach (array_slice($TRANSAKSI,0,5) as $tr): 
               $canEditK = $tr['payment_status']==='PAID';
-              $canRefundK = $canEditK && $tr['type']==='TIKET' && (time()-strtotime($tr['created_at']) < 24*3600);
+              $canRefundK = $canEditK && in_array($tr['type'], ['TIKET','SEWA'], true) && (time()-strtotime($tr['created_at']) < 24*3600);
             ?>
             <tr>
               <td class="num fw-bold" style="color:#0284c7"><?= e($tr['number']) ?></td>
@@ -258,15 +258,16 @@ $settings = $settings ?? [];
     </div>
   </div>
 
-<?php foreach (array_slice($TRANSAKSI,0,5) as $tr): if($tr['payment_status']!=='PAID' || $tr['type']!=='TIKET' || (time()-strtotime($tr['created_at'])>=24*3600)) continue; ?>
+<?php foreach (array_slice($TRANSAKSI,0,5) as $tr): if($tr['payment_status']!=='PAID' || !in_array($tr['type'], ['TIKET','SEWA'], true) || (time()-strtotime($tr['created_at'])>=24*3600)) continue; ?>
 <div class="modal fade" id="refundModalK<?= (int)$tr['id'] ?>" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content" style="border-radius:20px" method="post" action="<?= url('index.php?page=transaksi') ?>">
       <?= csrf_field() ?><input type="hidden" name="action" value="refund"><input type="hidden" name="id" value="<?= (int)$tr['id'] ?>">
-      <div class="modal-header"><h5 class="modal-title fw-bold">Refund — <?= e($tr['number']) ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-header"><h5 class="modal-title fw-bold">Refund <?= e($tr['type'])==='SEWA'?'Sewa Alat':'Tiket' ?> — <?= e($tr['number']) ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
+        <div class="alert alert-warning small py-2"><i class="bi bi-exclamation-triangle me-1"></i>Refund hanya dalam <b>24 jam</b>. Status jadi <b>CANCELLED</b>.</div>
         <label class="form-label fw-semibold">Keterangan *</label>
-        <textarea class="form-control" name="keterangan" rows="3" required placeholder="Alasan..."></textarea>
+        <textarea class="form-control" name="keterangan" rows="3" required placeholder="Contoh: Salah input, pelanggan batal, alat rusak..."></textarea>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-danger" type="submit">Refund</button></div>
     </form>

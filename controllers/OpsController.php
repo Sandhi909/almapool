@@ -228,7 +228,7 @@ class TransaksiController
             $trx = (new Transaction())->find($id);
             if (!$trx) { flash('error','Transaksi tidak ditemukan.'); redirect('?page=transaksi'); }
             if ($trx['payment_status'] !== 'PAID') { flash('error','Transaksi sudah '.$trx['payment_status'].' tidak bisa refund.'); redirect('?page=transaksi'); }
-            if ($trx['type'] !== 'TIKET') { flash('error','Refund hanya untuk tiket.'); redirect('?page=transaksi'); }
+            if (!in_array($trx['type'], ['TIKET','SEWA'], true)) { flash('error','Refund hanya untuk tiket dan sewa alat.'); redirect('?page=transaksi'); }
             $created = strtotime($trx['created_at']);
             if (time() - $created > 24*3600) { flash('error','Refund hanya bisa dalam 24 jam (transaksi '.$trx['number'].' sudah lewat sehari).'); redirect('?page=transaksi'); }
             $ket = trim((string)post('keterangan',''));

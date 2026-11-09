@@ -161,7 +161,7 @@
       <tbody>
         <?php foreach ($TRANSAKSI as $tr):
           $canEdit = $tr['payment_status']==='PAID';
-          $canRefund = $canEdit && $tr['type']==='TIKET' && (time()-strtotime($tr['created_at']) < 24*3600);
+          $canRefund = $canEdit && in_array($tr['type'], ['TIKET','SEWA'], true) && (time()-strtotime($tr['created_at']) < 24*3600);
           $isCancelled = $tr['payment_status']==='CANCELLED';
         ?>
         <tr>
@@ -203,17 +203,17 @@
   </div>
 </div>
 
-<?php foreach ($TRANSAKSI as $tr): if($tr['payment_status']!=='PAID' || $tr['type']!=='TIKET' || (time()-strtotime($tr['created_at'])>=24*3600)) continue; ?>
+<?php foreach ($TRANSAKSI as $tr): if($tr['payment_status']!=='PAID' || !in_array($tr['type'], ['TIKET','SEWA'], true) || (time()-strtotime($tr['created_at'])>=24*3600)) continue; ?>
 <div class="modal fade" id="refundModal<?= (int)$tr['id'] ?>" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content" style="border-radius:20px" method="post" action="<?= url('index.php?page=transaksi') ?>">
       <?= csrf_field() ?><input type="hidden" name="action" value="refund"><input type="hidden" name="id" value="<?= (int)$tr['id'] ?>">
-      <div class="modal-header"><h5 class="modal-title fw-bold">Refund Tiket — <?= e($tr['number']) ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-header"><h5 class="modal-title fw-bold">Refund <?= e($tr['type']) === 'SEWA' ? 'Sewa Alat' : 'Tiket' ?> — <?= e($tr['number']) ?></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
         <div class="alert alert-warning small py-2"><i class="bi bi-exclamation-triangle me-1"></i>Refund hanya dalam <b>24 jam</b>. Status akan jadi <b>CANCELLED</b> dan tercatat keterangan refund.</div>
         <div class="d-flex gap-2 small mb-2"><span class="pill pill-blue"><?= e($tr['type']) ?></span><span class="pill <?= $tr['area']==='PUTRI'?'pill-amber':($tr['area']==='CAMPURAN'?'pill-green':'pill-blue') ?>"><?= e($tr['area']==='CAMPURAN'?'Putra dan Putri':ucfirst(strtolower($tr['area']))) ?></span><span class="ms-auto fw-bold num"><?= rupiah($tr['amount']) ?></span></div>
         <label class="form-label fw-semibold">Keterangan refund *</label>
-        <textarea class="form-control" name="keterangan" rows="3" required placeholder="Contoh: Salah input qty, pelanggan batal, tiket rusak..."></textarea>
+        <textarea class="form-control" name="keterangan" rows="3" required placeholder="Contoh: Salah input qty, pelanggan batal, alat rusak..."></textarea>
         <small class="text-muted">Wajib diisi, akan tersimpan di kolom notes sebagai [REFUND ...: keterangan].</small>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-danger" type="submit"><i class="bi bi-arrow-counterclockwise me-1"></i>Refund Sekarang</button></div>
