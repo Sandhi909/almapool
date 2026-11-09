@@ -88,11 +88,11 @@ $keYab = $cashbon + ($L['setoran'][2]['jumlah'] - $totBiaya);
   .kasir-hero { display: none !important; }
   .lap-wrap { font-size: 10.5px; }
   .lap-wrap th, .lap-wrap td { padding: 2px 4px; border-color: #000; }
-  .lap-wrap thead th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .lap-wrap tr.sec td, .lap-wrap tr.sec th { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .lap-wrap tr.sec-bop td, .lap-wrap tr.sec-bop th { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .lap-wrap tr.sec-bersih td, .lap-wrap tr.sec-bersih th { background: #d0e8f8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .lap-wrap tr.sec-setoran td, .lap-wrap tr.sec-setoran th { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lap-wrap thead th { background: #d7e7f7 !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lap-wrap tr.sec td, .lap-wrap tr.sec th { background: #fbe3ae !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lap-wrap tr.sec-bop td, .lap-wrap tr.sec-bop th { background: #d7e7f7 !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lap-wrap tr.sec-bersih td, .lap-wrap tr.sec-bersih th { background: #bae6fd !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lap-wrap tr.sec-setoran td, .lap-wrap tr.sec-setoran th { background: #d7e7f7 !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .lap-wrap img { max-height: 50px; }
   .lap-wrap table { page-break-inside: auto; }
   .lap-wrap tr { page-break-inside: avoid; page-break-after: auto; }
