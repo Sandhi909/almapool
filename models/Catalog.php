@@ -35,6 +35,18 @@ class Membership extends Model
     {
         $pkg = $this->queryOne('SELECT * FROM membership_packages WHERE id = ?', [$packageId]);
         if (!$pkg) throw new RuntimeException('Paket tidak valid.');
+
+        // Cek apakah sudah ada membership ACTIVE untuk member+paket yang covers hari ini
+        // (idempotent: hindari duplikat jika Bayar diklik 2x)
+        $today = date('Y-m-d');
+        $existing = $this->queryOne(
+            "SELECT * FROM memberships WHERE member_id = ? AND package_id = ? AND status = 'ACTIVE' AND start_date <= ? AND end_date >= ? ORDER BY end_date DESC LIMIT 1",
+            [$memberId, $packageId, $today, $today]);
+        if ($existing) {
+            return ['id' => $existing['id'], 'start' => $existing['start_date'], 'end' => $existing['end_date'],
+                'price' => (float) $pkg['price'], 'name' => $pkg['name'], 'tier' => $pkg['tier']];
+        }
+
         // Ada pendaftaran yang belum dibayar untuk paket yang sama -> aktifkan itu (jangan dobel).
         $pending = $this->queryOne(
             "SELECT * FROM memberships WHERE member_id = ? AND package_id = ? AND status = 'PENDING_PAYMENT' ORDER BY id DESC LIMIT 1",
@@ -45,7 +57,6 @@ class Membership extends Model
                 'price' => (float) $pkg['price'], 'name' => $pkg['name'], 'tier' => $pkg['tier']];
         }
         $cur = $this->queryOne('SELECT * FROM memberships WHERE member_id = ? ORDER BY end_date DESC, id DESC LIMIT 1', [$memberId]);
-        $today = date('Y-m-d');
         $start = $today;
         if ($cur && $cur['status'] === 'ACTIVE' && $cur['end_date'] >= $today) {
             $start = date('Y-m-d', strtotime($cur['end_date'] . ' +1 day'));

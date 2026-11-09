@@ -859,8 +859,12 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   $('btnResetCart').addEventListener('click', resetCart);
   $('btnBayar').addEventListener('click', function () {
+    if (this.disabled) return; // prevent double-click
+    this.disabled = true;
+    const originalHtml = this.innerHTML;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Memproses...';
     const total = +($('cartTotal').dataset.value || 0);
-    if (!total) { Swal.fire({ icon: 'warning', title: 'Keranjang kosong' }); return; }
+    if (!total) { Swal.fire({ icon: 'warning', title: 'Keranjang kosong' }); this.disabled = false; this.innerHTML = originalHtml; return; }
     // Validasi per cart entry (mendukung fleksibel: 1 tiket sama beda jenjang/usia/rombongan dalam 1 transaksi)
     for(const k in cart){
       const it = cart[k]; if(it.qty<=0 || it.kind!=='tiket') continue;
@@ -947,7 +951,7 @@ document.addEventListener('DOMContentLoaded', function () {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         }).then(r => r.json()).then(d => {
-          if (!d.ok) { Swal.fire({ icon: 'error', title: 'Gagal', text: d.message }); return; }
+          if (!d.ok) { Swal.fire({ icon: 'error', title: 'Gagal', text: d.message }); throw new Error(d.message); }
           Swal.fire({
             icon: 'success', title: d.number, text: fmt(d.total) + ' — ' + d.message,
             showCancelButton: true, confirmButtonText: 'Cetak Struk', cancelButtonText: 'Selesai'
@@ -955,7 +959,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (r2.isConfirmed) window.open('<?= url('index.php?page=struk&id=') ?>' + d.receipt_id, '_blank');
             location.reload();
           });
-        }).catch(() => Swal.fire({ icon: 'error', title: 'Gagal', text: 'Server tidak merespons.' }));
+        }).catch(() => {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: 'Server tidak merespons.' });
+        }).finally(() => {
+          this.disabled = false;
+          this.innerHTML = originalHtml;
+        });
       });
   });
   $('cariItem').addEventListener('input', function () {
