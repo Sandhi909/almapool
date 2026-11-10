@@ -63,6 +63,8 @@ class Member extends Model
     public function derivedStatus(array $row): string
     {
         if (empty($row['end_date'])) return 'Expired';
+        // Tanggal sudah lewat -> selalu Expired, apa pun status pembayarannya.
+        if ($row['end_date'] < date('Y-m-d')) return 'Expired';
         if (($row['ms_status'] ?? '') === 'PENDING_PAYMENT') return 'Akan Expired';
         return status_membership($row['end_date'], (int) $this->expiringDays());
     }
