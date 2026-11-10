@@ -79,6 +79,9 @@
       <?php endif; ?>
       <?php endforeach; ?>
       <?php endif; ?>
+      <?php if ((float) ($t['cashback'] ?? 0) > 0): ?>
+      <div class="d-flex"><span>Cashback</span><span class="ms-auto">Rp<?= number_format($t['cashback'], 0, ',', '.') ?></span></div>
+      <?php endif; ?>
       <div class="d-flex"><span>Bayar (<?= e($t['payment_method'] === 'TAGIHAN' ? 'Tagihan' : $t['payment_method']) ?>)</span><span class="ms-auto">Rp<?= number_format($t['paid_amount'], 0, ',', '.') ?></span></div>
       <div class="d-flex"><span>Kembalian</span><span class="ms-auto">Rp<?= number_format($t['change_amount'], 0, ',', '.') ?></span></div>
       <?php if ($t['payment_status'] === 'CANCELLED' && !empty($t['notes'])): ?>

@@ -177,6 +177,8 @@ class KasirController
         $pay = $paySingle;
         $payDetail = null;
         $paidSplit = null;
+        // Cashback fleksibel untuk semua metode bayar; hanya rincian di struk, tidak memengaruhi total.
+        $cashback = max(0, (float) preg_replace('/[^0-9]/', '', (string) ($in['cashback'] ?? 0)));
         if ($paySplit !== null) {
             $nz = array_filter($paySplit, fn ($v) => $v > 0);
             if (!$nz) json_response(['ok' => false, 'message' => 'Isi nominal tiap metode bayar dulu.'], 422);
@@ -228,7 +230,7 @@ class KasirController
                 // Catatan transaksi diturunkan ulang dari item terbaru (hindari duplikasi "POS loket").
                 $stamp = ' [EDIT ' . date('Y-m-d H:i:s') . ']';
                 $editNotes = mb_substr($notesFinal, 0, max(0, 255 - mb_strlen($stamp))) . $stamp;
-                $pdo->prepare('UPDATE transactions SET type=?, member_id=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, pay_tagihan=?, area=?, notes=? WHERE id=?')->execute([$type,$memberId,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$payCols['TAGIHAN'],$areaFinal,$editNotes,$editId]);
+                $pdo->prepare('UPDATE transactions SET type=?, member_id=?, amount=?, paid_amount=?, change_amount=?, payment_method=?, pay_tunai=?, pay_qris=?, pay_transfer=?, pay_tagihan=?, cashback=?, area=?, notes=? WHERE id=?')->execute([$type,$memberId,$total,$total,0,$pay,$payCols['TUNAI'],$payCols['QRIS'],$payCols['TRANSFER'],$payCols['TAGIHAN'],$cashback,$areaFinal,$editNotes,$editId]);
                 $pdo->commit();
             } catch(Throwable $e){ if($pdo->inTransaction()) $pdo->rollBack(); json_response(['ok'=>false,'message'=>'Gagal edit: '.$e->getMessage()],500); }
             
@@ -249,6 +251,7 @@ class KasirController
             'cashier_id' => (int) auth_user()['id'], 'area' => $areaFinal,
             'paid_amount' => $pay === 'GABUNGAN' ? $totalNow : (to_money($paidSplit ?? ($in['tendered'] ?? 0)) ?: null),
             'notes' => $notesFinal,
+            'cashback' => $cashback,
         ], $items);
 
         // Aktifkan/perpanjang membership untuk item member.

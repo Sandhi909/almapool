@@ -37,6 +37,7 @@ class Transaction extends Model
                 'pay_qris' => $pay['QRIS'],
                 'pay_transfer' => $pay['TRANSFER'],
                 'pay_tagihan' => $pay['TAGIHAN'],
+                'cashback' => $head['cashback'] ?? 0,
                 'payment_status' => 'PAID',
                 'cashier_id' => $head['cashier_id'],
                 'area' => $head['area'] ?? 'PUTRA',

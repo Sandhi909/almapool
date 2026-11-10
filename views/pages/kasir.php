@@ -333,6 +333,14 @@ $settings = $settings ?? [];
       </div>
       <div class="input-group mb-3"><span class="input-group-text bg-white">Rp</span><input class="form-control num" id="cashInput" inputmode="numeric" placeholder="Nominal" style="height:44px;border-radius:0 12px 12px 0"></div>
       </div>
+      <div class="rounded-3 px-2 py-1 mb-2" style="background:#fffbeb;border:1px solid #fde68a">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white py-0" style="min-width:72px;font-size:.7rem"><i class="bi bi-cash-coin me-1"></i>Cashback</span>
+          <span class="input-group-text bg-white py-0" style="font-size:.7rem">Rp</span>
+          <input class="form-control num py-0" id="cashbackInput" inputmode="numeric" placeholder="0" style="height:26px;font-size:.75rem">
+        </div>
+        <small class="text-muted d-block mt-1" style="font-size:.6rem;line-height:1.1">Hanya rincian di struk, tidak mengurangi total.</small>
+      </div>
       <button class="btn btn-tt btn-lg w-100 fw-bold" type="button" id="btnBayar" style="border-radius:14px;padding:12px;box-shadow:0 8px 20px rgba(37,99,235,.3)">BAYAR</button>
     </div>
   </div>
@@ -606,6 +614,7 @@ document.addEventListener('DOMContentLoaded', function () {
       $('splitQris').value = (+editData.trx.pay_qris||0).toLocaleString('id-ID');
       $('splitTransfer').value = (+editData.trx.pay_transfer||0).toLocaleString('id-ID');
     }
+    $('cashbackInput').value = (+editData.trx.cashback||0) ? (+editData.trx.cashback).toLocaleString('id-ID') : '';
     // ubah tombol bayar
     const btnBayarEl=document.getElementById('btnBayar');
     if(btnBayarEl) btnBayarEl.innerHTML='<i class="bi bi-save me-2"></i>SIMPAN PERUBAHAN';
@@ -850,6 +859,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.qty-flex-input').forEach(el=>el.value='1');
     cash = 0; $('cashInput').value = '';
     ['splitTunai','splitQris','splitTransfer'].forEach(id => { $(id).value = ''; });
+    $('cashbackInput').value = '';
     hitungSisa();
     document.querySelectorAll('.rombongan-jenjang-input').forEach(el=>el.value='');
     document.querySelectorAll('.rombongan-usia-input').forEach(el=>el.value='');
@@ -915,6 +925,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Gabungan: jumlah tiap metode harus pas total (tanpa kembalian).
     let payments = null;
     let tendered = cash > 0 ? cash : total;
+    const cashbackVal = +($('cashbackInput').value.replace(/[^0-9]/g, '') || 0);
     if (pay === 'GABUNGAN') {
       payments = splitVals();
       const s = payments.TUNAI + payments.TAGIHAN + payments.QRIS + payments.TRANSFER;
@@ -946,7 +957,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if(cartAreas.length===1) areaGlobal=cartAreas[0];
         else if(cartAreas.length>1) areaGlobal='CAMPURAN';
         else if(cartAreas.length===0) areaGlobal = editData ? (editData.trx.area || 'PUTRA') : 'PUTRA';
-        const payload={ tarif: tarif, kelas: kelas, area: areaGlobal, payment: pay, payments: payments, tendered: tendered, member_id: memberId, student_id: studentId, items: items, rombongan_jenjang_map: rombonganJenjangMap, rombongan_nama_map: rombonganNamaMap, rombongan_usia_map: rombonganUsiaMap, rombongan_kelas_map: rombonganKelasMap };
+        const payload={ tarif: tarif, kelas: kelas, area: areaGlobal, payment: pay, payments: payments, tendered: tendered, cashback: cashbackVal, member_id: memberId, student_id: studentId, items: items, rombongan_jenjang_map: rombonganJenjangMap, rombongan_nama_map: rombonganNamaMap, rombongan_usia_map: rombonganUsiaMap, rombongan_kelas_map: rombonganKelasMap };
         if(editData && editData.id) payload.edit_id=editData.id;
         fetch('<?= url('index.php?page=kasir&ajax=checkout') ?>', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
