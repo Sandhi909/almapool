@@ -72,7 +72,7 @@ $keYab = $cashbon + ($L['setoran'][2]['jumlah'] - $totBiaya);
 <style>
 .lap-wrap{font-family:Arial,Helvetica,sans-serif;font-size:11.5px;color:#111;background:#fff}
 .lap-wrap table{border-collapse:collapse;width:100%;margin-bottom:2px}
-.lap-wrap th,.lap-wrap td{border:1px solid #333;padding:3px 6px;vertical-align:top}
+.lap-wrap th,.lap-wrap td{border:1px solid #333;padding:3px 6px;vertical-align:top;box-sizing:border-box}
 .lap-wrap thead th{background:#d7e7f7;text-align:center}
 .lap-wrap tr.sec td,.lap-wrap tr.sec th{background:#fbe3ae;font-weight:700}
 .lap-wrap tr.sec-bop td,.lap-wrap tr.sec-bop th{background:#d7e7f7;font-weight:700}
@@ -209,10 +209,22 @@ $lapLastDay = (int) date('t', mktime(0, 0, 0, $lapMonth, 1, $lapYear));
         <td class="c">Uang Tunai (Rp)</td><td class="r"><?= e($n($L['saldo_awal']['tunai'])) ?></td></tr>
     </tbody>
   </table>
-  <table>
+  <table style="table-layout:fixed">
+    <colgroup>
+      <col style="width:3%">
+      <col style="width:20%">
+      <col style="width:9%">
+      <col style="width:7%">
+      <col style="width:9%">
+      <col style="width:7%">
+      <col style="width:9%">
+      <col style="width:7%">
+      <col style="width:9%">
+      <col style="width:20%">
+    </colgroup>
     <thead>
       <tr><th colspan="10" style="text-align:left">II.&nbsp;&nbsp;Penerimaan</th></tr>
-      <tr><th style="width:26px">A</th><th>Tiket</th><th class="c" colspan="2">Tarif A</th><th class="c" colspan="2">Tarif B</th><th class="c" colspan="2">Tarif C</th><th class="c">Jumlah</th><th class="c" style="white-space:nowrap;width:140px">Jumlah (Rp)</th></tr>
+      <tr><th style="width:26px">A</th><th>Tiket</th><th class="c" colspan="2">Tarif A</th><th class="c" colspan="2">Tarif B</th><th class="c" colspan="2">Tarif C</th><th class="c">Jumlah</th><th class="c" style="white-space:nowrap">Jumlah (Rp)</th></tr>
       <tr><th></th><th></th><th class="c">(Rp)</th><th class="c">Pengunjung</th><th class="c">(Rp)</th><th class="c">Pengunjung</th><th class="c">(Rp)</th><th class="c">Pengunjung</th><th></th><th></th></tr>
     </thead>
     <tbody>
@@ -230,9 +242,20 @@ $lapLastDay = (int) date('t', mktime(0, 0, 0, $lapMonth, 1, $lapYear));
       <tr class="sec-bop"><td colspan="8">Jumlah Tiket Keluar</td><td class="r b"><?= e($n($totLbr)) ?></td><td></td></tr>
     </tbody>
   </table>
-  <table>
+  <table style="table-layout:fixed">
+    <colgroup>
+      <col style="width:3%">
+      <col style="width:20%">
+      <col style="width:10%">
+      <col style="width:7%">
+      <col style="width:10%">
+      <col style="width:10%">
+      <col style="width:7%">
+      <col style="width:13%">
+      <col style="width:20%">
+    </colgroup>
     <thead>
-      <tr><th style="width:26px">B</th><th>Jenis Member</th><th class="c" colspan="3">Gold</th><th class="c" colspan="3">Silver</th><th class="c" style="white-space:nowrap;width:140px">Jumlah (Rp)</th></tr>
+      <tr><th style="width:26px">B</th><th>Jenis Member</th><th class="c" colspan="3">Gold</th><th class="c" colspan="3">Silver</th><th class="c" style="white-space:nowrap">Jumlah (Rp)</th></tr>
       <tr><th></th><th></th><th class="c">Tarif (Rp)</th><th class="c">Qty</th><th class="c">Jumlah</th><th class="c">Tarif (Rp)</th><th class="c">Qty</th><th class="c">Jumlah</th><th></th></tr>
     </thead>
     <tbody>
@@ -250,30 +273,63 @@ $lapLastDay = (int) date('t', mktime(0, 0, 0, $lapMonth, 1, $lapYear));
         <td class="r b"><?= e($n($totMember)) ?></td></tr>
     </tbody>
   </table>
-  <table>
+  <table style="table-layout:fixed">
+    <colgroup>
+      <col style="width:3%">
+      <col style="width:20%">
+      <col style="width:12%">
+      <col style="width:9%">
+      <col style="width:13%">
+      <col style="width:9%">
+      <col style="width:14%">
+      <col style="width:20%">
+    </colgroup>
     <thead>
-      <tr><th style="width:26px">C</th><th>Sewa Alat (Rp)</th><th>Jenis Les</th><th class="c">Tarif (Rp)</th><th class="c" colspan="2">Putra</th><th class="c" colspan="2">Putri</th><th class="c" style="white-space:nowrap;width:140px">Jumlah (Rp)</th></tr>
-      <tr><th></th><th></th><th></th><th></th><th class="c">Qty</th><th class="c">Jumlah</th><th class="c">Qty</th><th class="c">Jumlah</th><th></th></tr>
+      <tr><th style="width:26px">C</th><th>Jenis</th><th class="c">Tarif (Rp)</th><th class="c" colspan="2">Putra</th><th class="c" colspan="2">Putri</th><th class="c" style="white-space:nowrap">Jumlah (Rp)</th></tr>
+      <tr><th></th><th></th><th></th><th class="c">Qty</th><th class="c">Jumlah</th><th class="c">Qty</th><th class="c">Jumlah</th><th></th></tr>
     </thead>
     <tbody>
-      <?php $nLes = max(1, count($lesRows)); $iLes = 0; foreach ($lesRows as $r): $jenisLes = preg_replace('/^les\s+/i', '', (string)($r['jenis'] ?? '')); ?>
+      <?php
+      // Separate Privat and Reguler
+      $privatRows = []; $regulerRows = [];
+      foreach ($lesRows as $r) {
+          $name = strtolower(preg_replace('/^les\s+/i', '', (string)($r['jenis'] ?? '')));
+          if (str_contains($name, 'private') || str_contains($name, 'privat')) $privatRows[] = $r;
+          elseif (str_contains($name, 'reguler') || str_contains($name, 'regular')) $regulerRows[] = $r;
+      }
+      ?>
+      <!-- PRIVATE rows -->
+      <?php foreach ($privatRows as $r): ?>
       <tr>
-        <td></td>
-        <?php if ($iLes === 0): ?><td class="r" rowspan="<?= $nLes ?>"><?= e($n($L['sewa_alat'])) ?></td><?php endif; ?>
-        <td><?= e($jenisLes) ?></td><td class="r"><?= e($n($r['tarif'])) ?></td>
+        <td></td><td><?= e(preg_replace('/^les\s+/i', '', (string)($r['jenis'] ?? ''))) ?></td><td class="r"><?= e($n($r['tarif'])) ?></td>
         <td class="r"><?= e($n($r['qputra'])) ?></td><td class="r"><?= e($n($r['jpra'])) ?></td>
         <td class="r"><?= e($n($r['qputri'])) ?></td><td class="r"><?= e($n($r['jpri'])) ?></td>
-        <td class="r"><?= e($n($r['jml'])) ?></td>
+        <td class="r b"><?= e($n($r['jml'])) ?></td>
       </tr>
-      <?php $iLes++; endforeach; ?>
-      <tr class="sec-bop"><td></td><td colspan="3">Total Penerimaan dari Alat Sewa dan Les</td>
-        <td class="r b"><?= e($n($totQPutra)) ?></td><td></td>
-        <td class="r b"><?= e($n($totQPutri)) ?></td><td></td>
+      <?php endforeach; ?>
+
+      <!-- REGULER rows -->
+      <?php foreach ($regulerRows as $r): ?>
+      <tr>
+        <td></td><td><?= e(preg_replace('/^les\s+/i', '', (string)($r['jenis'] ?? ''))) ?></td><td class="r"><?= e($n($r['tarif'])) ?></td>
+        <td class="r"><?= e($n($r['qputra'])) ?></td><td class="r"><?= e($n($r['jpra'])) ?></td>
+        <td class="r"><?= e($n($r['qputri'])) ?></td><td class="r"><?= e($n($r['jpri'])) ?></td>
+        <td class="r b"><?= e($n($r['jml'])) ?></td>
+      </tr>
+      <?php endforeach; ?>
+
+      <!-- SEWA ALAT row -->
+      <tr>
+        <td></td><td colspan="6">Sewa Alat</td>
+        <td class="r b"><?= e($n($L['sewa_alat'])) ?></td>
+      </tr>
+
+      <tr class="sec-bop"><td></td><td colspan="6">Total Penerimaan dari Alat Sewa dan Les</td>
         <td class="r b"><?= e($n($totSewaLes)) ?></td></tr>
       <?php if ($tambahan > 0): ?>
-      <tr><td></td><td colspan="7">Biaya Tambahan Silver Hari Libur</td><td class="r"><?= e($n($tambahan)) ?></td></tr>
+      <tr><td></td><td colspan="6">Biaya Tambahan Silver Hari Libur</td><td class="r"><?= e($n($tambahan)) ?></td></tr>
       <?php endif; ?>
-      <tr class="sec"><td></td><td colspan="7">Total Penerimaan</td><td class="r b"><?= e($n($totPenerimaan)) ?></td></tr>
+      <tr class="sec"><td></td><td colspan="6">Total Penerimaan</td><td class="r b"><?= e($n($totPenerimaan)) ?></td></tr>
     </tbody>
   </table>
   <table>
