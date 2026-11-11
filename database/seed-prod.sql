@@ -1,3 +1,0 @@
--- Seed minimal production (tanpa dummy transaksi/member)
--- Dijalankan otomatis oleh seed.php yang baru
--- File ini hanya untuk referensi, seed via PHP
