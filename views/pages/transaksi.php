@@ -103,6 +103,20 @@
   <div style="margin-top:18px;font-size:9px;color:#555;border-top:1px solid #999;padding-top:6px;text-align:center">
     Dicetak pada: <?= hari_tanggal_indo() ?> <?= date('H:i') ?> WIB &bull; Sistem Kolam Renang Al Ma'soem
   </div>
+
+  <table style="margin-top:30px;border:0;width:100%">
+    <tbody>
+      <tr>
+        <td class="c" style="border:0;padding:0;vertical-align:top">
+          <div style="width:240px;margin-left:auto">
+            <div style="height:72px"></div>
+            <div style="border-top:1px solid #333;padding-top:4px;font-size:10px;font-weight:700"><?= e($TTD_ADMIN['nama']) ?></div>
+            <div style="font-size:9px"><?= e($TTD_ADMIN['jabatan']) ?></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <div class="row g-3 mb-3 no-print">

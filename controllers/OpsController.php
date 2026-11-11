@@ -108,6 +108,7 @@ class TransaksiController
         }
         $filter = ['date' => get_param('tgl', date('Y-m-d')), 'type' => get_param('jenis', ''),
             'method' => get_param('metode', ''), 'q' => get_param('q', '')];
+        $set = (new Setting())->allAsMap();
         $y = (int) date('Y');
         $mo = (int) date('m');
         $sum = (new Transaction())->todaySummary($filter['date'] ?: date('Y-m-d'));
@@ -131,6 +132,10 @@ class TransaksiController
             'tunaiBersih' => $tunaiBersih,
             'EXPENSE_TYPES' => (new MasterExpenseType())->active(),
             'SETORAN' => $setoranAuto,
+            'TTD_ADMIN' => [
+                'nama' => $set['ttd_admin'] ?? '-',
+                'jabatan' => $set['ttd_admin_jabatan'] ?? 'Administrasi Kolam',
+            ],
             'LAPORAN' => ['periode' => date('F Y')],
         ];
     }
