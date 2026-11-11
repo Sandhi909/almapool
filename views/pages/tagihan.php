@@ -79,7 +79,7 @@
             <?php if (($r['payment_method'] ?? '') === 'GABUNGAN'): ?><br><small class="text-muted" style="font-size:.65rem"><?= e(Transaction::payLabel($r)) ?></small><?php endif; ?>
           </td>
           <td class="text-end num"><?= $r['nilai_tiket'] > 0 ? rupiah($r['nilai_tiket']) : '<span class="text-muted">-</span>' ?></td>
-          <td class="text-end num fw-bold" style="color:<?= $r['pay_tagihan'] > 0 ? '#dc3545' : '#6c757d' ?>"><?= rupiah($r['pay_tagihan']) ?></td>
+          <td class="text-end num fw-bold" style="color:<?= $r['tagihan_nilai'] > 0 ? '#dc3545' : '#6c757d' ?>"><?= rupiah($r['tagihan_nilai']) ?></td>
           <td class="text-end">
             <a class="btn btn-sm btn-outline-primary" href="<?= url('index.php?page=struk&id=' . (int) $r['id'] . '&from=tagihan') ?>" target="_blank" rel="noopener" title="Lihat struk"><i class="bi bi-receipt"></i></a>
           </td>
@@ -91,5 +91,5 @@
       </tbody>
     </table>
   </div>
-  <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Menampilkan transaksi yang mengandung tiket tagihan (Cabor, Eskul, Sport Day, Eskul PSAM, Santri, Al Ma'soem Swimming Day) dan transaksi dengan nominal tagihan. Halaman ini hanya untuk dilihat.</small>
+  <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Menampilkan transaksi yang mengandung tiket tagihan (Cabor, Eskul, Sport Day, Eskul PSAM, Santri, Al Ma'soem Swimming Day) dan transaksi dengan nominal tagihan. Kolom <b>Tagihan</b>: bila ada bagian tagihan, diisi bagian tagihan saja; bila tidak ada, diisi penuh. Halaman ini hanya untuk dilihat.</small>
 </div>

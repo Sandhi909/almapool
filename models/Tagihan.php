@@ -20,7 +20,8 @@ class Tagihan extends Model
             $params[] = $like; $params[] = $like; $params[] = $like;
         }
         return $this->query(
-            "SELECT t.*, u.name AS kasir, x.items, x.nilai_tiket, x.is_tagihan_ticket
+            "SELECT t.*, u.name AS kasir, x.items, x.nilai_tiket, x.is_tagihan_ticket,
+                    CASE WHEN t.pay_tagihan > 0 THEN t.pay_tagihan ELSE t.amount END AS tagihan_nilai
              FROM transactions t
              JOIN (
                  SELECT ti.transaction_id,
@@ -44,7 +45,7 @@ class Tagihan extends Model
         $out = ['count' => count($rows), 'nilai_tiket' => 0.0, 'tagihan' => 0.0, 'total' => 0.0];
         foreach ($rows as $r) {
             $out['nilai_tiket'] += (float) ($r['nilai_tiket'] ?? 0);
-            $out['tagihan'] += (float) ($r['pay_tagihan'] ?? 0);
+            $out['tagihan'] += (float) ($r['tagihan_nilai'] ?? 0);
             $out['total'] += (float) ($r['amount'] ?? 0);
         }
         return $out;

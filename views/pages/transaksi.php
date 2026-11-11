@@ -68,17 +68,15 @@
 
   <table>
     <thead>
-      <tr class="sec"><th colspan="9" style="text-align:left">II.&nbsp;&nbsp;Daftar Transaksi</th></tr>
+      <tr class="sec"><th colspan="7" style="text-align:left">II.&nbsp;&nbsp;Daftar Transaksi</th></tr>
       <tr>
         <th style="width:26px">No</th>
         <th style="width:120px">Nomor</th>
         <th style="width:50px">Waktu</th>
         <th>Jenis / Detail</th>
         <th style="width:60px">Kolam</th>
-        <th style="width:80px">Kasir</th>
         <th style="width:90px" class="c">Total (Rp)</th>
         <th style="width:80px">Metode</th>
-        <th style="width:70px">Status</th>
       </tr>
     </thead>
     <tbody>
@@ -89,18 +87,16 @@
         <td class="c"><?= e((new DateTime($tr['created_at'], new DateTimeZone('Asia/Jakarta')))->format('H:i')) ?></td>
         <td style="font-size:10px"><?= e($tr['type']) ?><?php if (!empty($tr['jenis_detail'])): ?> &middot; <?= e($tr['jenis_detail']) ?><?php endif; ?></td>
         <td class="c"><?= e($tr['area']==='CAMPURAN'?'Putra/Putri':ucfirst(strtolower($tr['area']))) ?></td>
-        <td style="font-size:10px"><?= e($tr['kasir'] ?: '-') ?></td>
         <td class="r b"><?= number_format($tr['amount'], 0, ',', '.') ?></td>
         <td class="c"><?= e($tr['payment_method'] === 'TAGIHAN' ? 'TAGIHAN' : $tr['payment_method']) ?><?php if (($tr['payment_method'] ?? '') === 'GABUNGAN'): ?><br><span style="font-size:8px;color:#555"><?= e(Transaction::payLabel($tr)) ?></span><?php endif; ?></td>
-        <td class="c"><?= e($tr['payment_status']) ?></td>
       </tr>
       <?php endforeach; ?>
       <?php if (!$TRANSAKSI): ?>
-      <tr><td colspan="9" class="c" style="padding:14px;color:#777">Tidak ada transaksi pada periode ini.</td></tr>
+      <tr><td colspan="7" class="c" style="padding:14px;color:#777">Tidak ada transaksi pada periode ini.</td></tr>
       <?php endif; ?>
     </tbody>
     <tfoot>
-      <tr class="sec-bop"><td colspan="6" class="r">TOTAL</td><td class="r b"><?= number_format($sumHari['total'], 0, ',', '.') ?></td><td colspan="2"></td></tr>
+      <tr class="sec-bop"><td colspan="5" class="r">TOTAL</td><td class="r b"><?= number_format($sumHari['total'], 0, ',', '.') ?></td><td colspan="1"></td></tr>
     </tfoot>
   </table>
 
