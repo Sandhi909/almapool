@@ -962,8 +962,17 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('<?= url('index.php?page=kasir&ajax=checkout') ?>', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
-        }).then(r => r.json()).then(d => {
-          if (!d.ok) { Swal.fire({ icon: 'error', title: 'Gagal', text: d.message }); throw new Error(d.message); }
+        }).then(async r => {
+          let d = null;
+          try { d = await r.json(); } catch (e) { d = null; }
+          if (!d || typeof d.ok === 'undefined') {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: 'Server tidak merespons.' });
+            return;
+          }
+          if (!d.ok) {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Transaksi gagal disimpan.' });
+            return;
+          }
           Swal.fire({
             icon: 'success', title: d.number, text: fmt(d.total) + ' — ' + d.message,
             showCancelButton: true, confirmButtonText: 'Cetak Struk', cancelButtonText: 'Selesai'

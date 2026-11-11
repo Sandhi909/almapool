@@ -196,13 +196,19 @@ class KasirController
         }
         $payCols = Transaction::normalizePay($payDetail, $pay, $totalNow);
 
-        // Susun catatan transaksi (dipakai untuk transaksi baru maupun edit).
+        // Catatan transaksi (dipakai untuk transaksi baru maupun edit).
+        // Hanya transaksi yang seluruhnya sewa alat yang memakai nama alat sebagai catatan;
+        // transaksi campuran (mis. tiket + sewa) tetap menyimpan rincian tiket.
+        $onlySewa = true;
+        foreach ($items as $it) {
+            if (($it['item_type'] ?? '') !== 'SEWA') { $onlySewa = false; break; }
+        }
         $notesParts = ['POS loket'];
         foreach($rombonganJenjangMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Jenjang: '.$val; } }
         foreach($rombonganUsiaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Usia: '.$val; } }
         foreach($rombonganNamaMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Rombongan: '.$val; } }
         foreach($rombonganKelasMap as $ref=>$val){ if($val!==''){ $tt=(new TicketType())->find((int)$ref); $notesParts[] = ($tt['name'] ?? 'Tiket '.$ref).' Kelas: '.$val; } }
-        if ($type === 'SEWA' && $sewaNames) {
+        if ($onlySewa && $sewaNames) {
             // Halaman Sewa memakai kolom notes sebagai keterangan alat.
             $notesParts = $sewaNames;
         } elseif ($sewaNames) {
@@ -211,11 +217,9 @@ class KasirController
         $notesFinal = implode(' | ', $notesParts);
 
         if ($editId) {
-            // Jangan ubah jenis transaksi saat edit (mis. tiket menjadi member),
+            // Jenis transaksi dipertahankan saat edit (mis. Tiket + Sewa alat tetap TIKET),
             // supaya efek samping membership/les tetap konsisten.
-            if (($oldTrx['type'] ?? '') !== $type) {
-                json_response(['ok' => false, 'message' => 'Jenis transaksi tidak bisa diubah saat edit.'], 422);
-            }
+            $type = $oldTrx['type'] ?? $type;
             $total = $totalNow;
             // alokasi nomor seri untuk edit (sequential baru)
             foreach($items as &$ei){ if(($ei['item_type']??'')==='TIKET' && !empty($ei['item_ref_id'])){ $row=db()->query('SELECT serial_prefix, serial_next FROM ticket_types WHERE id='.(int)$ei['item_ref_id'])->fetch(); if($row){ $qty=(int)max(1,round((float)$ei['quantity'])); $start=(int)($row['serial_next']??1); $end=$start+$qty-1; $ei['serial_prefix']=$row['serial_prefix']??''; $ei['serial_start']=$start; $ei['serial_end']=$end; } } } unset($ei);
