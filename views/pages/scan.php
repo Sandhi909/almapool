@@ -85,16 +85,29 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('#gateGroup .btn').forEach(x => { x.classList.remove('btn-tt'); x.classList.add('btn-outline-secondary'); });
     this.classList.remove('btn-outline-secondary'); this.classList.add('btn-tt');
     document.getElementById('gateArea').value = this.dataset.gate;
+    try { localStorage.setItem('almapool_scan_area', this.dataset.gate); } catch (e) {}
   }));
+  // Ingat gate terakhir agar scan dari halaman lain memakai kolam yang sama.
+  try {
+    const savedGate = localStorage.getItem('almapool_scan_area');
+    if (savedGate === 'PUTRA' || savedGate === 'PUTRI') {
+      const gateBtn = document.querySelector('#gateGroup [data-gate="' + savedGate + '"]');
+      if (gateBtn) gateBtn.click();
+    }
+  } catch (e) {}
 
   function area() { return document.getElementById('gateArea').value || 'PUTRA'; }
   function goScan(text) {
     text = (text || '').trim();
-    let m = text.match(/MEM-\d+/i);
-    if (!m && /^\d{1,6}$/.test(text)) m = ['MEM-' + text.padStart(6, '0')];
-    if (!m) { Swal.fire({ icon: 'warning', title: 'QR tidak dikenali', text: 'Isi QR: ' + text }); return; }
+    // Gunakan normalisasi yang sama dengan listener barcode global (app.js).
+    let code = window.almapoolNormalizeBarcode ? window.almapoolNormalizeBarcode(text) : null;
+    if (!code) {
+      const m = text.match(/MEM-\d+/i);
+      code = m ? m[0].toUpperCase() : (/^\d{1,6}$/.test(text) ? 'MEM-' + text.padStart(6, '0') : null);
+    }
+    if (!code) { Swal.fire({ icon: 'warning', title: 'QR tidak dikenali', text: 'Isi QR: ' + text }); return; }
     stopCam();
-    location.href = '<?= url('index.php?page=hasil-scan') ?>&id=' + encodeURIComponent(m[0].toUpperCase()) + '&area=' + area();
+    location.href = '<?= url('index.php?page=hasil-scan') ?>&id=' + encodeURIComponent(code) + '&area=' + area();
   }
 
   let scanner = null, scanning = false;

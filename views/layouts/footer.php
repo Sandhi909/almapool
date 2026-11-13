@@ -13,7 +13,13 @@
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="<?= url('assets/js/app.js') ?>"></script>
+<script>
+window.ALMAPOOL_SCAN = <?= json_encode([
+  'enabled' => auth_check() && in_array((string) auth_role(), ['admin', 'petugas', 'kasir'], true),
+  'resultUrl' => url('index.php?page=hasil-scan'),
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+</script>
+<script src="<?= url('assets/js/app.js?v=' . (filemtime(__DIR__ . '/../../assets/js/app.js') ?: 1)) ?>"></script>
 <?php if (!empty($pageScripts)) { echo $pageScripts; } ?>
 </div><!-- /tt-app -->
 </body>
