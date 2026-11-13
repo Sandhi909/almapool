@@ -53,6 +53,11 @@ document.addEventListener('DOMContentLoaded', function () {
     text = String(text == null ? '' : text).trim();
     if (!text) return null;
     var m = text.match(/MEM-\d+/i);
+    if (!m) {
+      // Scanner/QR kadang mengeluarkan link, mis. http://host/?page=hasil-scan&id=123
+      var q = text.match(/[?&]id=(\d{1,6})(?:[^\d]|$)/i);
+      if (q) m = ['MEM-' + q[1].padStart(6, '0')];
+    }
     if (!m && /^\d{1,6}$/.test(text)) m = ['MEM-' + text.padStart(6, '0')];
     return m ? m[0].toUpperCase() : null;
   }
