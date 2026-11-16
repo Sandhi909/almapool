@@ -7,6 +7,9 @@
       <small class="opacity-90">Internal Control &bull; Rekonsiliasi uang masuk vs real</small>
     </div>
   </div>
+  <div class="ms-auto d-flex gap-2" style="position:relative;z-index:1">
+    <a class="btn bg-white text-success fw-bold btn-sm" href="<?= url('index.php?page=stok-opname&ajax=export&tgl=' . urlencode($date)) ?>" style="border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.12)"><i class="bi bi-file-earmark-excel me-1"></i>Unduh Excel</a>
+  </div>
 </div>
 
 <div class="tt-card mb-3">
@@ -86,6 +89,27 @@
           <label class="form-label fw-semibold">Biaya Operasional Keluar (real)</label>
           <input class="form-control num" name="biaya_keluar" inputmode="numeric" value="<?= $existing ? number_format($existing['biaya_keluar'], 0, ',', '.') : number_format($biayaHarian, 0, ',', '.') ?>">
         </div>
+        <hr class="my-2">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Kas di Kantor</label>
+          <input class="form-control num" name="kas_di_kantor" inputmode="numeric" value="<?= $existing ? number_format($existing['kas_di_kantor'], 0, ',', '.') : '' ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Bukti Setor ke Keuangan</label>
+          <input class="form-control num" name="bukti_setor" inputmode="numeric" value="<?= $existing ? number_format($existing['bukti_setor'], 0, ',', '.') : '' ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Transfer Rekening YAB</label>
+          <input class="form-control num" name="transfer_yab" inputmode="numeric" value="<?= $existing ? number_format($existing['transfer_yab'], 0, ',', '.') : '' ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">QRIS Kolam</label>
+          <input class="form-control num" name="qris_kolam" inputmode="numeric" value="<?= $existing ? number_format($existing['qris_kolam'], 0, ',', '.') : '' ?>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Sewa Alat di QRIS</label>
+          <input class="form-control num" name="sewa_qris" inputmode="numeric" value="<?= $existing ? number_format($existing['sewa_qris'], 0, ',', '.') : '' ?>">
+        </div>
         <div class="mb-3">
           <label class="form-label fw-semibold">Keterangan</label>
           <textarea class="form-control" name="notes" rows="2"><?= e($existing['notes'] ?? '') ?></textarea>
@@ -114,6 +138,14 @@
       <tr><td>Tagihan</td><td class="text-end num"><?= rupiah($existing['tagihan']) ?></td></tr>
       <tr><td>Biaya Operasional Keluar</td><td class="text-end num" style="color:#dc3545"><?= rupiah($existing['biaya_keluar']) ?></td></tr>
       <tr class="fw-bold"><td>TOTAL (Tunai Real + QRIS + Transfer + Tagihan - Biaya)</td><td class="text-end num" style="color:var(--tt-primary)"><?= rupiah($existing['total']) ?></td></tr>
+      <tr><td colspan="2" class="fw-bold" style="background:#f1f5f9"><i class="bi bi-wallet2 me-1"></i>KAS</td></tr>
+      <tr><td>Kas di Kantor</td><td class="text-end num"><?= rupiah($AGG['kas']['kas_di_kantor']) ?></td></tr>
+      <tr><td>Bukti Setor ke Keuangan</td><td class="text-end num"><?= rupiah($AGG['kas']['bukti_setor']) ?></td></tr>
+      <tr><td>Transfer Rekening YAB</td><td class="text-end num"><?= rupiah($AGG['kas']['transfer_yab']) ?></td></tr>
+      <tr><td>QRIS Kolam</td><td class="text-end num"><?= rupiah($AGG['kas']['qris_kolam']) ?></td></tr>
+      <tr><td>Sewa Alat di QRIS</td><td class="text-end num"><?= rupiah($AGG['kas']['sewa_qris']) ?></td></tr>
+      <tr class="fw-bold"><td>Selisih</td><td class="text-end num" style="color:<?= $AGG['selisih'] >= 0 ? '#198754' : '#dc3545' ?>"><?= rupiah($AGG['selisih']) ?></td></tr>
+      <tr><td>Total Uang disetorkan ke YAB</td><td class="text-end num fw-bold"><?= rupiah($AGG['setoran']) ?></td></tr>
     </tbody>
   </table>
 </div>

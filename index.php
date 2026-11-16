@@ -5,6 +5,7 @@ require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/database/db.php';
 require_once __DIR__ . '/core/Model.php';
 require_once __DIR__ . '/core/Auth.php';
+require_once __DIR__ . '/core/Xlsx.php';
 foreach (glob(__DIR__ . '/models/*.php') as $f) require_once $f;
 foreach (glob(__DIR__ . '/controllers/*.php') as $f) require_once $f;
 
@@ -31,6 +32,10 @@ if ($ajax === 'search' && $page === 'member') {
 }
 if ($ajax === 'students' && $page === 'les') {
     (new LesController())->students();
+    exit;
+}
+if ($ajax === 'export' && $page === 'stok-opname') {
+    (new StokOpnameController())->export();
     exit;
 }
 if ($page === 'scan' && $_SERVER['REQUEST_METHOD'] === 'POST') {
