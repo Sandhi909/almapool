@@ -63,11 +63,6 @@
 </div>
 
 <?php if (!$isExpired && !$sudah): ?>
-<?php if (($m['tier'] ?? 'SILVER') === 'GOLD'): ?>
-<div class="alert alert-success py-2 small"><i class="bi bi-patch-check me-1"></i>Member <b>Gold</b> — bebas berkunjung kapan saja, tanpa biaya tambahan.</div>
-<?php elseif (!empty($m['libur'])): ?>
-<div class="alert alert-warning py-2 small"><i class="bi bi-exclamation-triangle me-1"></i>Hari libur — member <b>Silver</b> tetap bisa masuk dengan <b>biaya tambahan <?= rupiah($m['fee']) ?></b> (tunai di gate).</div>
-<?php endif; ?>
 <form method="post" action="<?= url('index.php?page=scan') ?>">
   <?= csrf_field() ?>
   <input type="hidden" name="member_id" value="<?= (int) $m['id'] ?>">
@@ -80,7 +75,7 @@
       <label class="btn btn-outline-primary" for="arPutri">Putri</label>
     </div>
   </div>
-  <button class="btn btn-tt btn-lg w-100 mb-2" type="submit"><i class="bi bi-box-arrow-in-right me-2"></i><?= !empty($m['libur']) && ($m['tier'] ?? '') !== 'GOLD' ? 'CHECK-IN + BIAYA ' . rupiah($m['fee']) : 'CHECK-IN SEKARANG' ?></button>
+  <button class="btn btn-tt btn-lg w-100 mb-2" type="submit"><i class="bi bi-box-arrow-in-right me-2"></i>CHECK-IN SEKARANG</button>
 </form>
 <?php elseif ($sudah && !($auto && $auto['ok'])): ?>
 <div class="alert alert-warning">Member sudah melakukan kunjungan hari ini.</div>

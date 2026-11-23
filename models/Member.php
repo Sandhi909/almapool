@@ -104,12 +104,10 @@ class Member extends Model
         if ($done) {
             return ['ok' => false, 'message' => 'Member sudah melakukan kunjungan hari ini pada pukul ' . date('H:i', strtotime($done['check_in_at'])) . '.'];
         }
-        // Aturan: Gold bebas kapan saja. Silver di hari libur kena biaya tambahan.
+        // Aturan: scan/check-in member berlaku sama untuk semua tier, termasuk
+        // Silver di hari libur. Tidak ada biaya tambahan yang dicatat otomatis
+        // oleh sistem saat scan.
         $tier = strtoupper($ms['tier_snapshot'] ?? 'SILVER');
-        $surcharge = 0.0;
-        if ($tier !== 'GOLD' && is_libur(date('Y-m-d'))) {
-            $surcharge = silver_holiday_fee();
-        }
         try {
             $this->db->prepare('INSERT INTO member_visits (member_id, visit_date, check_in_at, area, officer_id) VALUES (?,?,?,?,?)')
                 ->execute([$memberId, date('Y-m-d'), date('Y-m-d H:i:s'), $area, $officerId]);
@@ -119,6 +117,6 @@ class Member extends Model
             }
             throw $e;
         }
-        return ['ok' => true, 'message' => 'Check-in berhasil.', 'surcharge' => $surcharge, 'tier' => $tier];
+        return ['ok' => true, 'message' => 'Check-in berhasil.', 'tier' => $tier];
     }
 }

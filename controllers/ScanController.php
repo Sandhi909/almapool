@@ -19,19 +19,6 @@ class ScanController
                 if ($status0 !== 'Expired' && !$already) {
                     $auto = (new Member())->checkin($memberId, $area, (int) auth_user()['id']);
                     if ($auto['ok']) {
-                        // catat biaya tambahan Silver hari libur seperti flow manual
-                        if (($auto['surcharge'] ?? 0) > 0) {
-                            $fee = (float) $auto['surcharge'];
-                            (new Transaction())->checkout([
-                                'type' => 'TAMBAHAN', 'member_id' => $memberId, 'payment_method' => 'TUNAI',
-                                'cashier_id' => (int) auth_user()['id'], 'area' => $area,
-                                'paid_amount' => $fee, 'notes' => 'Biaya tambahan Silver hari libur (auto scan)',
-                            ], [[
-                                'item_type' => 'TAMBAHAN', 'item_ref_id' => null,
-                                'item_name' => 'Biaya tambahan Silver hari libur', 'tariff_day' => '-', 'detail' => null,
-                                'quantity' => 1, 'unit_price' => $fee,
-                            ]]);
-                        }
                         $data['auto_checkin'] = $auto;
                         $already = (new Member())->visitedToday($memberId);
                         if ($auto['ok']) flash('success', $auto['message'] . ' Kunjungan tercatat otomatis ke database.');
@@ -42,8 +29,6 @@ class ScanController
                 $d = (new Member())->detail($memberId);
                 $ms = $d['membership'];
                 $tier = strtoupper($ms['tier_snapshot'] ?? 'SILVER');
-                $libur = is_libur(date('Y-m-d'));
-                $fee = ($tier !== 'GOLD' && $libur) ? silver_holiday_fee() : 0.0;
                 $visitedNow = (new Member())->visitedToday($memberId);
                 $data['SCAN_MEMBER'] = [
                     'id' => $m['id'], 'nama' => $m['name'], 'nomor' => $m['member_number'], 'hp' => $m['phone'] ?? '-',
@@ -54,7 +39,6 @@ class ScanController
                     'sisa' => $ms ? ('s/d ' . tanggal_indo($ms['end_date'])) : '-',
                     'kunjungan' => $visitedNow ? 'Sudah Check-in' : 'Belum Check-in',
                     'terakhir' => $d['visits'][0]['check_in_at'] ?? '-',
-                    'libur' => $libur, 'fee' => $fee,
                 ];
                 $data['visited'] = $visitedNow;
             }
@@ -73,20 +57,6 @@ class ScanController
         if ($memberId) {
             $mm = (new Member())->find($memberId);
             if ($mm) $back .= '&id=' . urlencode($mm['member_number']) . '&area=' . $area;
-        }
-        if ($r['ok'] && ($r['surcharge'] ?? 0) > 0) {
-            // Silver di hari libur: catat biaya tambahan (tunai di gate).
-            $fee = (float) $r['surcharge'];
-            (new Transaction())->checkout([
-                'type' => 'TAMBAHAN', 'member_id' => $memberId, 'payment_method' => 'TUNAI',
-                'cashier_id' => (int) auth_user()['id'], 'area' => $area,
-                'paid_amount' => $fee, 'notes' => 'Biaya tambahan Silver hari libur',
-            ], [[
-                'item_type' => 'TAMBAHAN', 'item_ref_id' => null,
-                'item_name' => 'Biaya tambahan Silver hari libur', 'tariff_day' => '-', 'detail' => null,
-                'quantity' => 1, 'unit_price' => $fee,
-            ]]);
-            $r['message'] .= ' Biaya tambahan ' . rupiah($fee) . ' dicatat (tunai).';
         }
         if (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false || ($_POST['ajax'] ?? '') === '1') {
             json_response($r, $r['ok'] ? 200 : 422);

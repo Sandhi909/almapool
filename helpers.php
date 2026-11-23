@@ -210,7 +210,8 @@ function pill_status(string $status): string
 
 /**
  * Hari libur = Sabtu/Minggu + tanggal di pengaturan holidays (satu per baris, YYYY-MM-DD).
- * Silver tidak bebas di hari libur (kena biaya tambahan), Gold bebas kapan saja.
+ * Catatan: scan/check-in member diperlakukan sama untuk semua tier — tidak ada
+ * biaya tambahan yang dicatat otomatis oleh sistem (termasuk Silver di hari libur).
  */
 function is_libur(?string $date = null): bool
 {
