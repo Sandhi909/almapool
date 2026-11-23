@@ -12,19 +12,30 @@ $tier = strtoupper($ms['tier_snapshot'] ?? 'SILVER');
 .mcard-brand .b1 { display: block; font-size: 17px; letter-spacing: .04em; line-height: 1.05; font-weight: 800; }
 .mcard-brand .b2 { display: block; font-size: 17px; letter-spacing: .04em; line-height: 1.05; font-weight: 800; }
 .mcard-brand .pp { display: block; font-size: 10px; letter-spacing: .18em; line-height: 1.2; opacity: .75; margin-top: 1px; }
-.mcard-foot { text-align: center; font-size: 14px; letter-spacing: .3em; font-weight: 700; opacity: .8; margin-top: 14px; position: relative; z-index: 1; }
+.mcard-foot { text-align: left; font-size: 13px; letter-spacing: .26em; font-weight: 700; opacity: .8; position: relative; z-index: 1; }
 .mcard-tier { margin-left: auto; text-align: right; }
-.mcard-tier .t { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .18em; padding: 4px 12px; border-radius: 999px;
-  color: #0f172a; background: transparent; border: 1.5px solid currentColor; }
-.mcard-name { font-weight: 800; line-height: 1.15; white-space: nowrap; max-width: 100%; overflow: hidden; }
-.mcard-bot2 { display: flex; align-items: center; gap: 10px; margin-top: 6px; position: relative; z-index: 1; }
+/* Badge tier: garis tebal + huruf tegas agar tetap terbaca di PVC silver/gold. */
+.mcard-tier .t { display: inline-block; font-size: 13.5px; font-weight: 800; letter-spacing: .16em; padding: 5px 15px 5px 17px;
+  border-radius: 999px; line-height: 1.2; color: #0f172a; background: rgba(15,23,42,.08);
+  border: 3px solid currentColor; }
+.mcard-name { font-weight: 800; line-height: 1.15; white-space: nowrap; max-width: 100%; overflow: hidden; margin-top: 2px; }
+/* Blok teks disejajarkan ke tengah QR agar tidak menggantung di atas. */
+.mcard-bot2 { display: flex; align-items: center; gap: 10px; margin-top: 12px; position: relative; z-index: 1; }
 .mcard-idwrap { flex: 1; min-width: 0; }
-.mcard-idwrap small { display: block; font-size: 9px; letter-spacing: .22em; line-height: 1; opacity: .7; margin-top: 3px; }
-.mcard-num { font-family: 'Courier New', monospace; font-size: 16px; font-weight: 700; letter-spacing: .14em; opacity: .95; }
+.mcard-num { font-family: 'Courier New', monospace; font-size: 16px; font-weight: 700; letter-spacing: .14em; opacity: .95; margin-top: 3px; }
 .mcard-qr { margin-left: auto; background: #fff; border-radius: 12px; padding: 7px; line-height: 0; border: 2px solid #0f172a; }
-.mcard-back { color: #0f172a; padding: 26px 34px; display: flex; flex-direction: column; }
-.mcard-back .rule { font-size: 10.5px; color: #1e293b; }
-.mcard-sign { border-top: 1px dashed rgba(15,23,42,.5); margin-top: auto; padding-top: 6px; display: flex; justify-content: space-between; font-size: 10px; color: #1e293b; }
+.mcard-back { color: #0f172a; padding: 22px 34px; display: flex; flex-direction: column; }
+.mcard-back .rule { font-size: 10px; line-height: 1.5; color: #1e293b; }
+.mcard-sign { border-top: 1px dashed rgba(15,23,42,.5); margin-top: auto; padding-top: 6px; display: flex; justify-content: center; font-size: 10px; color: #1e293b; }
+/* Hotline kolam — strip ramping agar tidak mendominasi kartu. */
+.mcard-hotline { margin-top: 16px; align-self: center; display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid rgba(15,23,42,.75); border-radius: 999px; padding: 3px 12px 3px 3px; }
+.mcard-hotline .ic { width: 20px; height: 20px; border-radius: 50%; background: #0f172a; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.mcard-hotline .ic svg { width: 10px; height: 10px; fill: currentColor; display: block; }
+.mcard-hotline .lbl { font-size: 7.5px; letter-spacing: .2em; font-weight: 800; text-transform: uppercase; opacity: .8; }
+.mcard-hotline .sep { width: 1px; height: 10px; background: rgba(15,23,42,.35); }
+.mcard-hotline b { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 800; letter-spacing: .05em; }
 /* Backdrop preview saja (warna PVC) — tidak ikut tercetak/terunduh. */
 .card-preview { width: 100%; max-width: 430px; border-radius: 22px; padding: 14px; display: flex; justify-content: center;
   background: linear-gradient(135deg, #c9ccd1 0%, #f2f3f5 45%, #b6bbc2 100%); }
@@ -80,12 +91,12 @@ $tier = strtoupper($ms['tier_snapshot'] ?? 'SILVER');
         <div class="mcard-brand"><span class="b1">KOLAM RENANG</span><span class="b2">AL MA'SOEM</span><span class="pp">TERPISAH PUTRA PUTRI</span></div>
         <div class="mcard-tier"><span class="t"><?= e(ucfirst(strtolower($tier))) ?></span></div>
       </div>
-      <div class="mcard-foot">KARTU MEMBER</div>
       <?php $nmLen = mb_strlen($m['name']); $nmSize = max(11, min(26, (int) floor(238 / (0.68 * max(1, $nmLen))))); ?>
       <div class="mcard-bot2">
         <div class="mcard-idwrap">
+          <div class="mcard-foot">KARTU MEMBER</div>
           <div class="mcard-name" id="mcardName" data-size="<?= $nmSize ?>" style="font-size:<?= $nmSize ?>px"><?= e(strtoupper($m['name'])) ?></div>
-          <small>ID MEMBER</small><div class="mcard-num"><?= e($m['member_number']) ?></div>
+          <div class="mcard-num"><?= e($m['member_number']) ?></div>
         </div>
         <div class="mcard-qr"><div id="qrBox"></div></div>
       </div>
@@ -104,11 +115,17 @@ $tier = strtoupper($ms['tier_snapshot'] ?? 'SILVER');
       <b style="font-size:13px;letter-spacing:.06em">KETENTUAN PENGGUNAAN KARTU</b>
       <ol class="rule ps-3 mt-2 mb-2">
         <li>Kartu ini adalah identitas member &amp; wajib dibawa setiap berkunjung.</li>
-        <li>Berlaku <b>satu check-in per hari</b>; kolam putra & putri terpisah.</li>
         <li>Hilang/rusak dapat <b>cetak ulang tanpa member baru</b> (QR tetap sama).</li>
         <li>Dilarang dipinjamkan ke orang lain.</li>
+        <li>Penyalahgunaan kartu oleh pihak lain mengakibatkan keanggotaan dinyatakan hangus.</li>
       </ol>
-      <div class="mcard-sign"><span><?= e($m['member_number']) ?></span><span><?= e($settings['nama_kolam'] ?? '') ?></span></div>
+      <div class="mcard-hotline">
+        <span class="ic"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.136.703-2.877L1.885.511z"/></svg></span>
+        <span class="lbl">Hotline Kolam</span>
+        <span class="sep"></span>
+        <b>0812-1834-0610</b>
+      </div>
+      <div class="mcard-sign"><span><?= e($settings['nama_kolam'] ?? '') ?></span></div>
     </div>
     </div>
     <small class="text-muted mt-1 no-print">Tampak belakang &bull; latar preview tidak ikut tercetak</small>
